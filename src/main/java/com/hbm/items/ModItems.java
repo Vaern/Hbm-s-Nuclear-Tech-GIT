@@ -22,6 +22,7 @@ import com.hbm.items.machine.ItemRBMKRod.EnumBurnFunc;
 import com.hbm.items.machine.ItemRBMKRod.EnumDepleteFunc;
 import com.hbm.items.machine.ItemRTGPelletDepleted.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemStamp.StampType;
+import com.hbm.items.nuke.ItemNukeGunBullet;
 import com.hbm.items.special.*;
 import com.hbm.items.special.ItemPlasticScrap.ScrapType;
 import com.hbm.items.tool.*;
@@ -1835,7 +1836,10 @@ public class ModItems {
 	public static Item n2_charge;
 	public static Item egg_balefire_shard;
 	public static Item egg_balefire;
-
+	
+	public static Item custom_nuke_target;
+	public static Item custom_nuke_bullet;
+	
 	public static Item custom_tnt;
 	public static Item custom_nuke;
 	public static Item custom_hydro;
@@ -4565,7 +4569,10 @@ public class ModItems {
 		
 		egg_balefire_shard = new Item().setUnlocalizedName("egg_balefire_shard").setMaxStackSize(16).setCreativeTab(MainRegistry.nukeTab).setTextureName(RefStrings.MODID + ":egg_balefire_shard");
 		egg_balefire = new Item().setUnlocalizedName("egg_balefire").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab).setTextureName(RefStrings.MODID + ":egg_balefire");
-
+		
+		custom_nuke_target = new ItemNukeGunBullet().setUnlocalizedName("custom_nuke_target").setTextureName(RefStrings.MODID + ":custom_nuke_target");
+		custom_nuke_bullet = new ItemNukeGunBullet().setUnlocalizedName("custom_nuke_bullet").setTextureName(RefStrings.MODID + ":custom_nuke_bullet");
+		
 		custom_tnt = new ItemCustomLore().setUnlocalizedName("custom_tnt").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab).setTextureName(RefStrings.MODID + ":custom_tnt");
 		custom_nuke = new ItemCustomLore().setUnlocalizedName("custom_nuke").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab).setTextureName(RefStrings.MODID + ":custom_nuke");
 		custom_hydro = new ItemCustomLore().setUnlocalizedName("custom_hydro").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab).setTextureName(RefStrings.MODID + ":custom_hydro");
@@ -7900,6 +7907,10 @@ public class ModItems {
 		GameRegistry.registerItem(alloy_plate, alloy_plate.getUnlocalizedName());
 		GameRegistry.registerItem(alloy_legs, alloy_legs.getUnlocalizedName());
 		GameRegistry.registerItem(alloy_boots, alloy_boots.getUnlocalizedName());
+		
+		//Custom Nuke Parts
+		GameRegistry.registerItem(custom_nuke_target, custom_nuke_target.getUnlocalizedName());
+		GameRegistry.registerItem(custom_nuke_bullet, custom_nuke_bullet.getUnlocalizedName());
 		
 		//Custom Rods
 		GameRegistry.registerItem(custom_tnt, custom_tnt.getUnlocalizedName());
