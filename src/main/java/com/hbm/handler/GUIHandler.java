@@ -36,6 +36,8 @@ public class GUIHandler implements IGuiHandler {
 		if(entity instanceof TileEntitySafe) {			return new ContainerSafe(player.inventory, (TileEntitySafe) entity); }
 		if(entity instanceof TileEntityMassStorage) {	return new ContainerMassStorage(player.inventory, (TileEntityMassStorage) entity); }
 
+		if(entity instanceof TileEntityMachineCoreCaster) { 	return new ContainerCoreCaster(player.inventory, (TileEntityMachineCoreCaster) entity); }
+		
 		if(entity instanceof TileEntityMachineAutocrafter) {	return new ContainerAutocrafter(player.inventory, (TileEntityMachineAutocrafter) entity); }
 
 		if(entity instanceof TileEntityMachineLiquefactor) {	return new ContainerLiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity); }
@@ -861,6 +863,8 @@ public class GUIHandler implements IGuiHandler {
 		if(entity instanceof TileEntityCrateTungsten) {	return new GUICrateTungsten(player.inventory, (TileEntityCrateTungsten) entity); }
 		if(entity instanceof TileEntitySafe) {			return new GUISafe(player.inventory, (TileEntitySafe) entity); }
 		if(entity instanceof TileEntityMassStorage) {	return new GUIMassStorage(player.inventory, (TileEntityMassStorage) entity); }
+		
+		if(entity instanceof TileEntityMachineCoreCaster) { 	return new GUICoreCaster(player.inventory, (TileEntityMachineCoreCaster) entity); }
 		
 		if(entity instanceof TileEntityMachineAutocrafter) {	return new GUIAutocrafter(player.inventory, (TileEntityMachineAutocrafter) entity); }
 		

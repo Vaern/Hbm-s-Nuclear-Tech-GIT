@@ -1046,7 +1046,9 @@ public class ModBlocks {
 	public static final int guiID_waste_drum = 79;
 	public static Block machine_storage_drum;
 	public static final int guiID_storage_drum = 118;
-
+	
+	public static Block machine_core_caster;
+	
 	public static Block machine_autocrafter;
 	
 	public static Block anvil_iron;
@@ -2168,6 +2170,8 @@ public class ModBlocks {
 		
 		machine_electrolyser = new MachineElectrolyser().setBlockName("machine_electrolyser").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":block_steel_machine");
 		
+		machine_core_caster = new MachineCoreCaster(Material.iron).setBlockName("machine_core_caster").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":block_steel_machine");
+		
 		machine_autocrafter = new MachineAutocrafter().setBlockName("machine_autocrafter").setCreativeTab(MainRegistry.machineTab);
 		
 		anvil_iron = new NTMAnvil(Material.iron, 1).setBlockName("anvil_iron").setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":anvil_iron");
@@ -2920,6 +2924,8 @@ public class ModBlocks {
 		//Machines
 		//GameRegistry.registerBlock(observer_off, observer_off.getUnlocalizedName());
 		//GameRegistry.registerBlock(observer_on, observer_on.getUnlocalizedName());
+		
+		GameRegistry.registerBlock(machine_core_caster, machine_core_caster.getUnlocalizedName());
 		
 		GameRegistry.registerBlock(machine_autocrafter, ItemBlockBase.class, machine_autocrafter.getUnlocalizedName());
 		

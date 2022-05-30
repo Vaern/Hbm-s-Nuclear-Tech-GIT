@@ -987,7 +987,9 @@ public class MainRegistry {
 		//the good stuff
 		SerializableRecipe.registerAllHandlers();
 		SerializableRecipe.initialize();
-
+		
+		TileEntityMachineCoreCaster.registerHashmaps();
+		
 		TileEntityNukeCustom.registerBombItems();
 		ArmorUtil.register();
 		HazmatRegistry.registerHazmats();
