@@ -6,8 +6,11 @@ import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.inventory.recipes.CoreCasterRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.InventoryUtil;
 import com.hbm.util.Tuple.Pair;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +21,9 @@ import net.minecraft.util.Vec3;
 
 public class TileEntityMachineCoreCaster extends TileEntityMachineBase implements IControlReceiver {
 	
-	private static final int[] slot_io = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
+	private static final int[] slot_io = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 	
+	public boolean mode = false;
 	public int selection = -1;
 	
 	public int quantity = 0;
@@ -31,7 +35,7 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	public static HashMap<Item, int[]> gunStyleMap = new HashMap<Item, int[]>();
 	
 	public TileEntityMachineCoreCaster() {
-		super(26);
+		super(23);
 	}
 	
 	@Override
@@ -45,11 +49,11 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 		if(selection == -1)
 			return false;
 		
-		if(i < 8) {
+		if(i < 6) {
 			
-		} else if(i < 16) {
+		} else if(i < 12) {
 			return gunStyleMap.containsKey(stack.getItem());
-		} else if(i < 24) {
+		} else if(i < 20) {
 			
 		}
 		
@@ -63,7 +67,7 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	
 	@Override
 	public boolean canExtractItem(int i, ItemStack itemStack, int j) {
-		return i > 24;
+		return i == 20;
 	}
 	
 	@Override
@@ -87,6 +91,7 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	@Override
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
+		nbt.setBoolean("mode", mode);
 		nbt.setInteger("selection", selection);
 		nbt.setInteger("quantity", quantity);
 		nbt.setInteger("criticalMass", criticalMass);
@@ -95,6 +100,7 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
+		this.mode = nbt.getBoolean("mode");
 		this.selection = nbt.getInteger("selection");
 		this.quantity = nbt.getInteger("quantity");
 		this.criticalMass = nbt.getInteger("criticalMass");
@@ -110,6 +116,7 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 			}
 			
 			NBTTagCompound data = new NBTTagCompound();
+			data.setBoolean("mode", mode);
 			data.setInteger("selection", selection);
 			data.setInteger("quantity", quantity);
 			data.setInteger("criticalMass", criticalMass);
@@ -119,48 +126,70 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	
 	@Override
 	public void networkUnpack(NBTTagCompound data) {
+		this.mode = data.getBoolean("mode");
 		this.selection = data.getInteger("selection");
 		this.quantity = data.getInteger("quantity");
 		this.criticalMass = data.getInteger("criticalMass");
 	}
 	
+	//mmmm procedural programming go! (ignoring all of the objects)
 	private void getValues() {
+		Pair<int[], ItemStack[]> pair;
+		
 		switch(selection) {
 		case 0:
-			calculateGunStyleValues(100000);	break;
+			pair = CoreCasterRecipes.calculateGunStyleValues(slots, 100000);
+			consumedItems = pair.getValue();
+			quantity = pair.getKey()[0];
+			criticalMass = pair.getKey()[1];
+			return;
 		case 1:
-			calculateGunStyleValues(215000);	break;
+			pair = CoreCasterRecipes.calculateGunStyleValues(slots, 215000);
+			consumedItems = pair.getValue();
+			quantity = pair.getKey()[0];
+			criticalMass = pair.getKey()[1];
+			return;
 		default:
+			consumedItems = null;
+			quantity = 0;
+			criticalMass = 0;
 			return;
 		}
 	}
 	
-	private void calculateGunStyleValues(int criticalLimit) {
-		ItemStack[] consumed = new ItemStack[slots.length];
-		quantity = 0;
-		criticalMass = 0;
-		for(byte i = 8; i < 16; i++) {
-			if(slots[i] == null)
-				continue;
-			
-			int[] values = gunStyleMap.get(slots[i].getItem()).clone(); //ha ha
-			
-			if(values == null)
-				continue;
-			
-			//NWFAQ; this is the *unreflected* limit, reflection allows for a higher assembled value
-			if(criticalMass + values[1] * slots[i].stackSize < criticalLimit) {
-				quantity += values[0] * slots[i].stackSize;
-				criticalMass += values[1] * slots[i].stackSize;
-				consumed[i] = slots[i].copy();
-			} else {
-				quantity = 0;
-				criticalMass = 0;
-				return;
-			}
+	private void getOutput() {
+		if(slots[20] != null)
+			return; //Something is occupying the output
+		
+		switch(selection) {
+		case 0:
+			slots[20] = getGunStyleOutput(ModItems.custom_nuke_target);	break;
+		case 1:
+			slots[20] = getGunStyleOutput(ModItems.custom_nuke_bullet);	break;
+		default:
+			return;
 		}
 		
-		consumedItems = consumed;
+		if(slots[20] == null)
+			return; //Failed to craft
+		
+		for(int i = 0; i < 20; i++) {
+			if(consumedItems[i] != null)
+				decrStackSize(i, consumedItems[i].stackSize);
+		}
+	}
+	
+	//TODO: Move this to CoreCasterRecipes
+	private ItemStack getGunStyleOutput(Item item) {
+		if(criticalMass < 25000)
+			return null;
+		
+		ItemStack output = new ItemStack(item);
+		output.stackTagCompound = new NBTTagCompound();
+		output.stackTagCompound.setInteger("quantity", quantity);
+		output.stackTagCompound.setInteger("criticalMass", criticalMass);
+		
+		return output;
 	}
 	
 	public static void registerHashmaps() {
@@ -175,6 +204,10 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	}
 	
 	//GUI stuff
+	
+	public boolean getMode() {
+		return this.mode;
+	}
 	
 	public int getSelection() {
 		return this.selection;
@@ -205,5 +238,14 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 			this.slotHasChanged = true;
 		}
 		
+		if(data.hasKey("mode")) {
+			this.mode = data.getBoolean("mode");
+			//TODO: for relevant items, check if you can actually change mode
+		}
+		
+		if(data.hasKey("craft")) {
+			getValues();
+			getOutput();
+		}
 	}
 }

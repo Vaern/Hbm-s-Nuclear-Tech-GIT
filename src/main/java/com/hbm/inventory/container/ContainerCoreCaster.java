@@ -17,35 +17,36 @@ public class ContainerCoreCaster extends Container {
 	public ContainerCoreCaster(InventoryPlayer playerInv, TileEntityMachineCoreCaster tile) {
 		caster = tile;
 		
-		for(int i = 0; i < 4; i++) {
-			for(int j = 0; j < 2; j++) {
-				this.addSlotToContainer(new InputSlot(tile, j + i * 2, 13 + j * 18, 26 + i * 18));
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 3; j++) {
+				this.addSlotToContainer(new InputSlot(tile, j + i * 3, 9 + j * 18, 20 + i * 18));
 			}
 		}
 		
-		for(int i = 0; i < 4; i++) {
-			for(int j = 0; j < 2; j++) {
-				this.addSlotToContainer(new InputSlot(tile, 8 + j + i * 2, 55 + j * 18, 26 + i * 18));
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 3; j++) {
+				this.addSlotToContainer(new InputSlot(tile, 6 + j + i * 3, 69 + j * 18, 20 + i * 18));
 			}
 		}
 		
-		for(int i = 0; i < 4; i++) {
-			for(int j = 0; j < 2; j++) {
-				this.addSlotToContainer(new InputSlot(tile, 16 + j + i * 2, 97 + j * 18, 26 + i * 18));
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 4; j++) {
+				this.addSlotToContainer(new InputSlot(tile, 12 + j + i * 4, 9 + j * 18, 62 + i * 18));
 			}
 		}
 		
-		this.addSlotToContainer(new SlotMachineOutput(tile, 24, 143, 30));
-		this.addSlotToContainer(new SlotMachineOutput(tile, 25, 143, 58));
+		this.addSlotToContainer(new SlotMachineOutput(tile, 20, 96, 71));
+		this.addSlotToContainer(new Slot(tile, 21, 9, 133));
+		this.addSlotToContainer(new Slot(tile, 22, 63, 133));
 		
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
-				this.addSlotToContainer(new Slot(playerInv, j + i * 9 + 9, 8 + j * 18, 113 + i * 18));
+				this.addSlotToContainer(new Slot(playerInv, j + i * 9 + 9, 15 + j * 18, 171 + i * 18));
 			}
 		}
 
 		for(int i = 0; i < 9; i++) {
-			this.addSlotToContainer(new Slot(playerInv, i, 8 + i * 18, 171));
+			this.addSlotToContainer(new Slot(playerInv, i, 15 + i * 18, 229));
 		}
 	}
 	
@@ -63,8 +64,8 @@ public class ContainerCoreCaster extends Container {
 			ItemStack stack = slot.getStack();
 			returnStack = stack.copy();
 
-			if(index <= 25) {
-				if(!this.mergeItemStack(stack, 26, this.inventorySlots.size(), false)) {
+			if(index <= 20) {
+				if(!this.mergeItemStack(stack, 21, this.inventorySlots.size(), false)) {
 					return null;
 				}
 			} else {
@@ -72,7 +73,7 @@ public class ContainerCoreCaster extends Container {
 					return null;
 				
 				if(caster.gunStyleMap.containsKey(stack.getItem())) {
-					if(!this.mergeItemStack(stack, 8, 16, false))
+					if(!this.mergeItemStack(stack, 6, 12, false))
 						return null;
 				} else {
 					return null;
