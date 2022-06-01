@@ -26,12 +26,15 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 	public boolean mode = false;
 	public int selection = -1;
 	
+	//TODO: Once necessary, move all of this to an int array.
 	public int quantity = 0;
 	public int criticalMass = 0;
+	public int radiation = 0;
 	
 	public boolean slotHasChanged = true;
 	public ItemStack[] consumedItems = new ItemStack[24];
 	
+	/** Quantity; Critical Mass; Radioactivity */
 	public static HashMap<Item, int[]> gunStyleMap = new HashMap<Item, int[]>();
 	
 	public TileEntityMachineCoreCaster() {
@@ -142,17 +145,20 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 			consumedItems = pair.getValue();
 			quantity = pair.getKey()[0];
 			criticalMass = pair.getKey()[1];
+			radiation = pair.getKey()[2];
 			return;
 		case 1:
 			pair = CoreCasterRecipes.calculateGunStyleValues(slots, 215000);
 			consumedItems = pair.getValue();
 			quantity = pair.getKey()[0];
 			criticalMass = pair.getKey()[1];
+			radiation = pair.getKey()[2];
 			return;
 		default:
 			consumedItems = null;
 			quantity = 0;
 			criticalMass = 0;
+			radiation = 0;
 			return;
 		}
 	}
@@ -163,9 +169,9 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 		
 		switch(selection) {
 		case 0:
-			slots[20] = getGunStyleOutput(ModItems.custom_nuke_target);	break;
+			slots[20] = CoreCasterRecipes.getGunStyleOutput(ModItems.custom_nuke_target, quantity, criticalMass, radiation);	break;
 		case 1:
-			slots[20] = getGunStyleOutput(ModItems.custom_nuke_bullet);	break;
+			slots[20] = CoreCasterRecipes.getGunStyleOutput(ModItems.custom_nuke_bullet, quantity, criticalMass, radiation);	break;
 		default:
 			return;
 		}
@@ -179,28 +185,20 @@ public class TileEntityMachineCoreCaster extends TileEntityMachineBase implement
 		}
 	}
 	
-	//TODO: Move this to CoreCasterRecipes
-	private ItemStack getGunStyleOutput(Item item) {
-		if(criticalMass < 25000)
-			return null;
-		
-		ItemStack output = new ItemStack(item);
-		output.stackTagCompound = new NBTTagCompound();
-		output.stackTagCompound.setInteger("quantity", quantity);
-		output.stackTagCompound.setInteger("criticalMass", criticalMass);
-		
-		return output;
-	}
-	
 	public static void registerHashmaps() {
-		gunStyleMap.put(ModItems.ingot_u233, new int[] { 9, 9 * 3333 }); //U233 block = way too many critical masses
-		gunStyleMap.put(ModItems.billet_u233, new int[] { 6, 6 * 3333 });
-		gunStyleMap.put(ModItems.nugget_u233, new int[] { 1, 3333 }); //15 kg
+		gunStyleMap.put(ModItems.ingot_u233, new int[] { 9, 9 * 3333, 5000 }); //U233 block = way too many critical masses
+		gunStyleMap.put(ModItems.billet_u233, new int[] { 6, 6 * 3333, 2500 });
+		gunStyleMap.put(ModItems.nugget_u233, new int[] { 1, 3333, 500 }); //15 kg
 		
-		gunStyleMap.put(Item.getItemFromBlock(ModBlocks.block_u235), new int[] { 81, 9 * 9 * 1042 });
-		gunStyleMap.put(ModItems.ingot_u235, new int[] { 9, 9 * 1042 });
-		gunStyleMap.put(ModItems.billet_u235, new int[] { 6, 6 * 1042 });
-		gunStyleMap.put(ModItems.nugget_u235, new int[] { 1, 1042 }); //48 kg
+		gunStyleMap.put(Item.getItemFromBlock(ModBlocks.block_u235), new int[] { 81, 9 * 9 * 1042, 10000 });
+		gunStyleMap.put(ModItems.ingot_u235, new int[] { 9, 9 * 1042, 1000 });
+		gunStyleMap.put(ModItems.billet_u235, new int[] { 6, 6 * 1042, 500 });
+		gunStyleMap.put(ModItems.nugget_u235, new int[] { 1, 1042, 100 }); //~48 kg; may be 93.5% u235 critical mass
+		
+		gunStyleMap.put(Item.getItemFromBlock(ModBlocks.block_neptunium), new int[] { 81, 9 * 9 * 943, 25000 });
+		gunStyleMap.put(ModItems.ingot_neptunium, new int[] { 9, 9 * 943, 2500 });
+		gunStyleMap.put(ModItems.billet_neptunium, new int[] { 6, 6 * 943, 1250 });
+		gunStyleMap.put(ModItems.nugget_neptunium, new int[] { 1, 943, 250 }); //57 kg, +/- 4 kg; mercy's sake, 53 kg
 	}
 	
 	//GUI stuff

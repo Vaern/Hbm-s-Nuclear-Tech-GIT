@@ -64,8 +64,8 @@ public class ContainerCoreCaster extends Container {
 			ItemStack stack = slot.getStack();
 			returnStack = stack.copy();
 
-			if(index <= 20) {
-				if(!this.mergeItemStack(stack, 21, this.inventorySlots.size(), false)) {
+			if(index <= 22) {
+				if(!this.mergeItemStack(stack, 23, this.inventorySlots.size(), false)) {
 					return null;
 				}
 			} else {

@@ -2,18 +2,17 @@ package com.hbm.items.nuke;
 
 import java.util.List;
 
+import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.items.ModItems;
 import com.hbm.util.I18nUtil;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
 
 public class ItemNukeGunBullet extends Item {
 	
@@ -30,38 +29,21 @@ public class ItemNukeGunBullet extends Item {
 		
 		//there's no fucking information on the unreflected critical mass of 80% HEU, so 1042 * 0.8 here we go
 		if(item == ModItems.custom_nuke_bullet)
-			list.add(getCustomNBT(item, 1, 77, 834)); //little boy 38.53 kg/30.82 kg pure
+			list.add(getCustomNBT(item, 1, 77, 834, 6575)); //little boy 38.53 kg/30.82 kg pure
 		if(item == ModItems.custom_nuke_target)
-			list.add(getCustomNBT(item, 1, 51, 834)); //little boy 25.6 kg/20.48 kg pure
+			list.add(getCustomNBT(item, 1, 51, 834, 4275)); //little boy 25.6 kg/20.48 kg pure
 	}
 	
 	//Static utility method for prefabs
-	public static ItemStack getCustomNBT(Item item, int meta, int weight, int criticalmass) {
+	public static ItemStack getCustomNBT(Item item, int meta, int weight, int criticalmass, int radiation) {
 		ItemStack output = new ItemStack(item, 1, meta);
 		output.stackTagCompound = new NBTTagCompound();
 		output.stackTagCompound.setInteger("quantity", weight);
 		output.stackTagCompound.setInteger("criticalMass", weight * criticalmass);
+		if(radiation > 0)
+			output.stackTagCompound.setFloat(HazardTransformerRadiationNBT.RAD_KEY, (float)radiation / 1000F);
 		
 		return output;
-	}
-	
-	private IIcon icon;
-	//TODO: Boron textures/ability to add them in core caster
-	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister reg) {
-		super.registerIcons(reg); //For boron sabots/Inserts
-	}
-	
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IIcon getIcon(ItemStack stack, int pass) {
-		return super.getIcon(stack, pass);
-	}
-	
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IIcon getIconIndex(ItemStack stack) {
-		return super.getIconIndex(stack);
 	}
 	
 	@Override
