@@ -37,6 +37,7 @@ public class GUIHandler implements IGuiHandler {
 		if(entity instanceof TileEntityMassStorage) {	return new ContainerMassStorage(player.inventory, (TileEntityMassStorage) entity); }
 
 		if(entity instanceof TileEntityMachineCoreCaster) { 	return new ContainerCoreCaster(player.inventory, (TileEntityMachineCoreCaster) entity); }
+		if(entity instanceof TileEntityMachineNukeAssembler) { 	return new ContainerNukeAssembler(player.inventory, (TileEntityMachineNukeAssembler) entity); }
 		
 		if(entity instanceof TileEntityMachineAutocrafter) {	return new ContainerAutocrafter(player.inventory, (TileEntityMachineAutocrafter) entity); }
 
@@ -865,6 +866,7 @@ public class GUIHandler implements IGuiHandler {
 		if(entity instanceof TileEntityMassStorage) {	return new GUIMassStorage(player.inventory, (TileEntityMassStorage) entity); }
 		
 		if(entity instanceof TileEntityMachineCoreCaster) { 	return new GUICoreCaster(player.inventory, (TileEntityMachineCoreCaster) entity); }
+		if(entity instanceof TileEntityMachineNukeAssembler) { 	return new GUINukeAssembler(player.inventory, (TileEntityMachineNukeAssembler) entity); }
 		
 		if(entity instanceof TileEntityMachineAutocrafter) {	return new GUIAutocrafter(player.inventory, (TileEntityMachineAutocrafter) entity); }
 		
