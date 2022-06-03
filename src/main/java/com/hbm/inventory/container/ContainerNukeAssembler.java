@@ -6,6 +6,7 @@ import com.hbm.tileentity.machine.TileEntityMachineNukeAssembler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
@@ -17,24 +18,21 @@ public class ContainerNukeAssembler extends Container {
 		assembler = tile;
 		
 		for(int i = 0; i < 2; i++) {
-			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new Slot(tile, j + i * 3, 9 + j * 18, 20 + i * 18));
-			}
-		}
-		
-		for(int i = 0; i < 2; i++) {
-			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new Slot(tile, 6 + j + i * 3, 69 + j * 18, 20 + i * 18));
+			for(int j = 0; j < 6; j++) {
+				this.addSlotToContainer(new InputSlot(tile, j + i * 3, 9 + j * 18, 20 + i * 18));
 			}
 		}
 		
 		for(int i = 0; i < 2; i++) {
 			for(int j = 0; j < 4; j++) {
-				this.addSlotToContainer(new Slot(tile, 12 + j + i * 4, 9 + j * 18, 62 + i * 18));
+				this.addSlotToContainer(new InputSlot(tile, 12 + j + i * 3, 9 + j * 18, 56 + i * 18));
 			}
 		}
 		
-		this.addSlotToContainer(new SlotMachineOutput(tile, 20, 96, 71));
+		this.addSlotToContainer(new InputSlot(tile, 20, 27, 107));
+		this.addSlotToContainer(new InputSlot(tile, 21, 45, 107));
+		
+		this.addSlotToContainer(new SlotMachineOutput(tile, 22, 96, 71));
 		
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -61,11 +59,11 @@ public class ContainerNukeAssembler extends Container {
 			ItemStack stack = slot.getStack();
 			returnStack = stack.copy();
 
-			if(index <= 20) {
-				if(!this.mergeItemStack(stack, 21, this.inventorySlots.size(), false)) {
+			if(index <= 22) {
+				if(!this.mergeItemStack(stack, 23, this.inventorySlots.size(), false)) {
 					return null;
 				}
-			} else if(!this.mergeItemStack(stack, 0, 21, false)) {
+			} else if(!this.mergeItemStack(stack, 0, 23, false)) {
 					return null;
 			}
 
@@ -79,4 +77,16 @@ public class ContainerNukeAssembler extends Container {
 		return returnStack;
 	}
 	
+public class InputSlot extends Slot {
+		
+		public InputSlot(IInventory inventory, int index, int x, int y) {
+			super(inventory, index, x, y);
+		}
+		
+		@Override
+		public void onSlotChanged() {
+			super.onSlotChanged();
+			assembler.slotHasChanged = true;
+		}
+	}
 }
