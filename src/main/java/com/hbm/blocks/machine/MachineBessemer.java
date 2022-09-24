@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.tileentity.TileEntityProxyCombo;
-import com.hbm.tileentity.machine.TileEntityMachineBessemer;
+import com.hbm.tileentity.machine.TileEntityBessemer;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,7 +21,7 @@ public class MachineBessemer extends BlockDummyable {
 	public TileEntity createNewTileEntity(World world, int meta) {
 		
 		if(meta >= 12)
-			return new TileEntityMachineBessemer();
+			return new TileEntityBessemer();
 		if(meta >= extra)
 			return new TileEntityProxyCombo(false, false, false);
 		
