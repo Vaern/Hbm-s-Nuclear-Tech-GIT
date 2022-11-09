@@ -24,14 +24,19 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IControlReceiver { //implements IGUIProvider {:3
 	//please help i'm going mental :3
-	public final int metalCapacity = MaterialShapes.BLOCK.q(24);
+	public List<MaterialStack> metalStack = new ArrayList();
+	public MaterialStack additiveStack = null; //just carbon for now
+	
+	public static int metalCapacity = MaterialShapes.BLOCK.q(24);
+	public static int additiveCapacity = MaterialShapes.BLOCK.q(12);
+	
+	/*public final int metalCapacity = MaterialShapes.BLOCK.q(24); TODO: remove these other fields in favor of the above */
 	public final int carbonCapacity = MaterialShapes.BLOCK.q(20);
 	public MaterialStack iron = new MaterialStack(Mats.MAT_IRON, 0);
 	public MaterialStack steel = new MaterialStack(Mats.MAT_STEEL, 0);
 	public int carbon = 0; //We only care about the amount of carbon, not if it was from petcoke or coal coke or whatever
 	
 	public boolean isProgressing = false;
-	public int progressSpeed = 20;
 	
 	public boolean automatic = false;
 	public boolean isPouring = false;
@@ -55,7 +60,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		
 		if(!worldObj.isRemote) {
 			
-			isItemSmeltable(slots[0]);
+			//isItemSmeltable(slots[0]);
 			
 			if(canConvert()) {
 				
@@ -74,16 +79,17 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			if(automatic && !canConvert() && steel.amount > 0) //wait until all potential steel is converted
 				isPouring = true;
 			
-			if(angle >= maxAngle && isPouring && steel.amount > 0) {
+			/*if(angle >= maxAngle && isPouring && steel.amount > 0) {
 				//empty as much of contents as possible until target block is filled/this is empty
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 				Vec3 impact = Vec3.createVectorHelper(0, 0, 0);
 				List<MaterialStack> pourStack = new ArrayList() { { add(steel); } };
+				MaterialStack returnStack = this.pour(worldObj, progressSpeed, carbonCapacity, metalCapacity, carbonCapacity, carbon, angle, dir, iron)
 				MaterialStack returnStack = ICrucibleAcceptor.tryPour(worldObj, xCoord + 0.5D + dir.offsetX * 1.75D, yCoord + 0.25D, zCoord + 0.5D + dir.offsetZ * 1.75D, 6, false, pourStack, MaterialShapes.INGOT.q(1), impact);
 				
 				if(returnStack == null || (returnStack != null && returnStack.amount <= 0))
 					isPouring = false;
-			}
+			}*/
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setInteger("ironAmt", iron.amount);
@@ -150,6 +156,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		if(side != ForgeDirection.UP) return false;
 		if(stack.material != iron.material && iron.amount + steel.amount >= metalCapacity) return false;
 		//TODO: check where the pour is hitting here using forge direction; also check isPouring
+		if(isPouring || angle > 0) return false;
 		return true;
 	}
 
@@ -175,45 +182,11 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 
 	@Override
 	public MaterialStack flow(World world, int x, int y, int z, ForgeDirection side, MaterialStack stack) {
-		return null;
+		return stack;
 	}
 	
 	public boolean canConvert() {
 		return !isPouring && iron.amount > 0 && carbon > 0;
-	}
-	
-	MaterialStack[] acceptedInput = new MaterialStack[] { 
-			new MaterialStack(Mats.MAT_COALCOKE, 72), new MaterialStack(Mats.MAT_PETCOKE, 108) };
-	
-	//Only used for coke input :3
-	public boolean isItemSmeltable(ItemStack stack) {
-		List<MaterialStack> materials = Mats.getMaterialsFromItem(stack);
-		
-		if(materials.isEmpty())
-			return false;
-		
-		for(MaterialStack mat : materials) {
-			int input = getQuantaFromType(acceptedInput, mat.material);
-			if(carbon + input <= carbonCapacity) {
-				carbon += input;
-				
-				stack.stackSize--;
-				
-				if(stack.stackSize <= 0)
-					stack = null;
-			}			
-		}
-		
-		return true;
-	}
-	
-	public int getQuantaFromType(MaterialStack[] stacks, NTMMaterial mat) {
-		for(MaterialStack stack : stacks) {
-			if(mat == null || stack.material == mat) {
-				return stack.amount;
-			}
-		}
-		return 0;
 	}
 	
 	@Override

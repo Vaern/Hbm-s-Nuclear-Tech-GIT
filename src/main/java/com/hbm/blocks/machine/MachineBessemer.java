@@ -35,26 +35,23 @@ public class MachineBessemer extends BlockDummyable {
 	
 	@Override
 	public int getOffset() {
-		return 1;
+		return 0;
 	}
 	
 	@Override
 	public int[] getDimensions() {
-		return new int[] { 4, -1, 1, 1, 1, 1 };
+		return new int[] { 0, 0, 0, 0, 0, 0 };
 	}
 	
 	@Override
 	protected boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
-		return super.checkRequirement(world, x, y, z, dir, o) &&
-			MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{2, 0, 2, 2, 2, -2}, x, y, z, dir) &&
-			MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{2, 0, 2, 2, -2, 2}, x, y, z, dir);
+		return super.checkRequirement(world, x, y, z, dir, o);
 	}
 	
 	@Override
 	public void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {
 		super.fillSpace(world, x, y, z, dir, o);
 		
-		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{2, 0, 2, 2, 2, -2}, this, dir);
-		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{2, 0, 2, 2, -2, 2}, this, dir);
+		
 	}
 }
