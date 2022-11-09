@@ -10,12 +10,14 @@ import com.hbm.inventory.material.Mats.MaterialStack;
 
 import api.hbm.block.ICrucibleAcceptor;
 import net.minecraft.block.Block;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 	
 	public int nextUpdate;
+	public int lastFlow = 0;
 	
 	@Override
 	public void updateEntity() {
@@ -30,10 +32,15 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 			
 			if(nextUpdate <= 0 && this.amount > 0 && this.type != null) {
 				
-				nextUpdate = worldObj.rand.nextInt(6) + 10;
+				boolean hasOp = false;
+				nextUpdate = 5;
 				
 				List<Integer> ints = new ArrayList() {{ add(2); add(3); add(4); add(5); }};
 				Collections.shuffle(ints);
+				if(lastFlow > 0) {
+					ints.remove((Integer) this.lastFlow);
+					ints.add(this.lastFlow);
+				}
 				
 				for(Integer i : ints) {
 					ForgeDirection dir = ForgeDirection.getOrientation(i);
@@ -50,41 +57,51 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 							} else {
 								this.amount = left.amount;
 							}
-							return;
+							hasOp = true;
+							break;
 						}
 					}
 				}
 				
-				for(Integer i : ints) {
-					ForgeDirection dir = ForgeDirection.getOrientation(i);
-					TileEntity b = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord, zCoord + dir.offsetZ);
-					
-					if(b instanceof TileEntityFoundryChannel) {
-						TileEntityFoundryChannel acc = (TileEntityFoundryChannel) b;
+				if(!hasOp) {
+					for(Integer i : ints) {
+						ForgeDirection dir = ForgeDirection.getOrientation(i);
+						TileEntity b = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord, zCoord + dir.offsetZ);
 						
-						if(acc.type == null || acc.type == this.type) {
-							acc.type = this.type;
+						if(b instanceof TileEntityFoundryChannel) {
+							TileEntityFoundryChannel acc = (TileEntityFoundryChannel) b;
 							
-							if(worldObj.rand.nextInt(5) == 0) {
-								//1:4 chance that the fill states are simply swapped
-								//this promotes faster spreading and prevents spread limits
-								int buf = this.amount;
-								this.amount = acc.amount;
-								acc.amount = buf;
+							if(acc.type == null || acc.type == this.type || acc.amount == 0) {
+								acc.type = this.type;
 								
-							} else {
-								//otherwise, equalize the neighbors
-								int diff = this.amount - acc.amount;
+								acc.lastFlow = dir.getOpposite().ordinal();
 								
-								if(diff > 0) {
-									diff /= 2;
-									this.amount -= diff;
-									acc.amount += diff;
+								if(worldObj.rand.nextInt(5) == 0 || this.amount == 1) { //force swap operations with single quanta to keep them moving
+									//1:4 chance that the fill states are simply swapped
+									//this promotes faster spreading and prevents spread limits
+									int buf = this.amount;
+									this.amount = acc.amount;
+									acc.amount = buf;
+									
+								} else {
+									//otherwise, equalize the neighbors
+									int diff = this.amount - acc.amount;
+									
+									if(diff > 0) {
+										diff /= 2;
+										this.amount -= diff;
+										acc.amount += diff;
+									}
 								}
 							}
 						}
 					}
 				}
+			}
+			
+			if(this.amount == 0) {
+				this.lastFlow = 0;
+				this.nextUpdate = 5;
 			}
 		}
 		
@@ -94,5 +111,17 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 	@Override
 	public int getCapacity() {
 		return MaterialShapes.INGOT.q(1);
+	}
+
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+		this.lastFlow = nbt.getByte("flow");
+	}
+
+	@Override
+	public void writeToNBT(NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+		nbt.setByte("flow", (byte) this.lastFlow);
 	}
 }

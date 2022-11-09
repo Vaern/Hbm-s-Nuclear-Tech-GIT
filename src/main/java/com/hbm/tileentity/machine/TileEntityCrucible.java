@@ -1,8 +1,11 @@
 package com.hbm.tileentity.machine;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.gui.GUICrucible;
@@ -13,6 +16,7 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes.CrucibleRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.CrucibleUtil;
@@ -21,6 +25,7 @@ import api.hbm.tile.IHeatSource;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -28,22 +33,50 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider {
+public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider, IConfigurableMachine {
 
 	public int heat;
-	public static final int maxHeat = 100_000;
 	public int progress;
-	public static final int processTime = 20_000;
-	public static final double diffusion = 0.25D;
-
-	public final int recipeCapacity = MaterialShapes.BLOCK.q(16);
-	public final int wasteCapacity = MaterialShapes.BLOCK.q(16);
+	
 	public List<MaterialStack> recipeStack = new ArrayList();
 	public List<MaterialStack> wasteStack = new ArrayList();
+
+	/* CONFIGURABLE CONSTANTS */
+	//because eclipse's auto complete is dumb as a fucking rock, it's now called "ZCapacity" so it's listed AFTER the actual stacks in the auto complete list.
+	//also martin i know you read these: no i will not switch to intellij after using eclipse for 8 years.
+	public static int recipeZCapacity = MaterialShapes.BLOCK.q(16);
+	public static int wasteZCapacity = MaterialShapes.BLOCK.q(16);
+	public static int processTime = 20_000;
+	public static double diffusion = 0.25D;
+	public static int maxHeat = 100_000;
+
+	@Override
+	public String getConfigName() {
+		return "crucible";
+	}
+
+	@Override
+	public void readIfPresent(JsonObject obj) {
+		recipeZCapacity = IConfigurableMachine.grab(obj, "I:recipeCapacity", recipeZCapacity);
+		wasteZCapacity = IConfigurableMachine.grab(obj, "I:wasteCapacity", wasteZCapacity);
+		processTime = IConfigurableMachine.grab(obj, "I:processHeat", processTime);
+		diffusion = IConfigurableMachine.grab(obj, "D:diffusion", diffusion);
+		maxHeat = IConfigurableMachine.grab(obj, "I:heatCap", maxHeat);
+	}
+
+	@Override
+	public void writeConfig(JsonWriter writer) throws IOException {
+		writer.name("I:recipeCapacity").value(recipeZCapacity);
+		writer.name("I:wasteCapacity").value(wasteZCapacity);
+		writer.name("I:processHeat").value(processTime);
+		writer.name("D:diffusion").value(diffusion);
+		writer.name("I:heatCap").value(maxHeat);
+	}
 
 	public TileEntityCrucible() {
 		super(10);
@@ -78,6 +111,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 								
 								if(stack.stackSize == 1) {
 									slots[i] = stack.copy();
+									item.setDead();
+									break;
 								} else {
 									slots[i] = stack.copy();
 									slots[i].stackSize = 1;
@@ -90,6 +125,20 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 					}
 				}
 			}
+
+			int totalCap = recipeZCapacity + wasteZCapacity;
+			int totalMass = 0;
+
+			for(MaterialStack stack : recipeStack) totalMass += stack.amount;
+			for(MaterialStack stack : wasteStack) totalMass += stack.amount;
+			
+			double level = ((double) totalMass / (double) totalCap) * 0.875D;
+			
+			List<EntityLivingBase> living = worldObj.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, xCoord + 0.5, yCoord + 0.5 + level, zCoord + 0.5).expand(1, 0, 1));
+			for(EntityLivingBase entity : living) {
+				entity.attackEntityFrom(DamageSource.lava, 5F);
+				entity.setFire(5);
+			}
 			
 			/* smelt items from buffer */
 			if(!trySmelt()) {
@@ -98,7 +147,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 			
 			tryRecipe();
 			
-			/* pour wasste stack */
+			/* pour waste stack */
 			if(!this.wasteStack.isEmpty()) {
 				
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getOpposite();
@@ -170,7 +219,42 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 		this.heat = nbt.getInteger("heat");
 	}
 	
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+
+		int[] rec = nbt.getIntArray("rec");
+		for(int i = 0; i < rec.length / 2; i++) {
+			recipeStack.add(new MaterialStack(Mats.matById.get(rec[i * 2]), rec[i * 2 + 1]));
+		}
+		
+		int[] was = nbt.getIntArray("was");
+		for(int i = 0; i < was.length / 2; i++) {
+			wasteStack.add(new MaterialStack(Mats.matById.get(was[i * 2]), was[i * 2 + 1]));
+		}
+		
+		this.progress = nbt.getInteger("progress");
+		this.heat = nbt.getInteger("heat");
+	}
+	
+	@Override
+	public void writeToNBT(NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+		
+		int[] rec = new int[recipeStack.size() * 2];
+		int[] was = new int[wasteStack.size() * 2];
+		for(int i = 0; i < recipeStack.size(); i++) { MaterialStack sta = recipeStack.get(i); rec[i * 2] = sta.material.id; rec[i * 2 + 1] = sta.amount; }
+		for(int i = 0; i < wasteStack.size(); i++) { MaterialStack sta = wasteStack.get(i); was[i * 2] = sta.material.id; was[i * 2 + 1] = sta.amount; }
+		nbt.setIntArray("rec", rec);
+		nbt.setIntArray("was", was);
+		nbt.setInteger("progress", progress);
+		nbt.setInteger("heat", heat);
+	}
+	
 	protected void tryPullHeat() {
+		
+		if(this.heat >= this.maxHeat) return;
+		
 		TileEntity con = worldObj.getTileEntity(xCoord, yCoord - 1, zCoord);
 		
 		if(con instanceof IHeatSource) {
@@ -210,11 +294,11 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 		if(this.progress >= processTime) {
 			this.progress = 0;
 			
-			List<MaterialStack> materials = Mats.getMaterialsFromItem(slots[slot]);
+			List<MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(slots[slot]);
 			CrucibleRecipe recipe = getLoadedRecipe();
 			
 			for(MaterialStack material : materials) {
-				boolean mainStack = recipe != null && getQuantaFromType(recipe.input, material.material) > 0;
+				boolean mainStack = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
 				
 				if(mainStack) {
 					this.addToStack(this.recipeStack, material);
@@ -243,12 +327,13 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 			stack.amount -= getQuantaFromType(recipe.input, stack.material);
 		}
 		
+		outer:
 		for(MaterialStack out : recipe.output) {
 			
 			for(MaterialStack stack : this.recipeStack) {
 				if(stack.material == out.material) {
 					stack.amount += out.amount;
-					break;
+					continue outer;
 				}
 			}
 			
@@ -269,10 +354,20 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 		
 		return -1;
 	}
+
+	@Override
+	public boolean isItemValidForSlot(int i, ItemStack stack) {
+		
+		if(i == 0) {
+			return stack.getItem() == ModItems.crucible_template;
+		}
+		
+		return isItemSmeltable(stack);
+	}
 	
 	public boolean isItemSmeltable(ItemStack stack) {
 		
-		List<MaterialStack> materials = Mats.getMaterialsFromItem(stack);
+		List<MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(stack);
 		
 		//if there's no materials in there at all, don't smelt
 		if(materials.isEmpty())
@@ -286,11 +381,19 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 		//the amount of material in the entire recipe input
 		int recipeContent = recipe != null ? recipe.getInputAmount() : 0;
 		//the total amount of the current waste stack, used for simulation
+		int recipeAmount = getQuantaFromType(this.recipeStack, null);
 		int wasteAmount = getQuantaFromType(this.wasteStack, null);
 		
 		for(MaterialStack mat : materials) {
 			//if no recipe is loaded, everything will land in the waste stack
 			int recipeInputRequired = recipe != null ? getQuantaFromType(recipe.input, mat.material) : 0;
+			
+			//this allows pouring the ouput material back into the crucible
+			if(recipe != null && getQuantaFromType(recipe.output, mat.material) > 0) {
+				recipeAmount += mat.amount;
+				matchesRecipe = true;
+				continue;
+			}
 			
 			if(recipeInputRequired == 0) {
 				//if this type isn't required by the recipe, add it to the waste stack
@@ -298,10 +401,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 			} else {
 				
 				//the maximum is the recipe's ratio scaled up to the recipe stack's capacity
-				int matMaximum = recipeInputRequired * this.recipeCapacity / recipeContent;
+				int matMaximum = recipeInputRequired * this.recipeZCapacity / recipeContent;
 				int amountStored = getQuantaFromType(recipeStack, mat.material);
 				
 				matchesRecipe = true;
+				
+				recipeAmount += mat.amount;
 				
 				//if the amount of that input would exceed the amount dictated by the recipe, return false
 				if(recipe != null && amountStored + mat.amount > matMaximum)
@@ -309,8 +414,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 			}
 		}
 		
-		//if the waste amount doesn't exceed the capacity and the recipe matches (or isn't null), return true
-		return wasteAmount <= this.wasteCapacity && matchesRecipe;
+		//if the amount doesn't exceed the capacity and the recipe matches (or isn't null), return true
+		return recipeAmount <= this.recipeZCapacity && wasteAmount <= this.wasteZCapacity && matchesRecipe;
 	}
 	
 	public void addToStack(List<MaterialStack> stack, MaterialStack matStack) {
@@ -351,7 +456,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 				return stack.amount;
 			}
 			if(mat == null) {
-				return sum += stack.amount;
+				sum += stack.amount;
 			}
 		}
 		return sum;

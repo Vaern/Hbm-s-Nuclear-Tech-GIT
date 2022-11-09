@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 /* Described as "Civilian", as that's the overarching connection between all of these structures. Unlike the ruins, there's not enough to 
@@ -21,8 +22,16 @@ import net.minecraft.world.gen.structure.StructureBoundingBox;
  */
 public class CivilianFeatures {
 	
+	public static void registerComponents() {
+		MapGenStructureIO.func_143031_a(NTMHouse1.class, "NTMHouse1"); 
+		MapGenStructureIO.func_143031_a(NTMHouse2.class, "NTMHouse2"); 
+		MapGenStructureIO.func_143031_a(NTMLab1.class, "NTMLab1"); 
+		MapGenStructureIO.func_143031_a(NTMLab2.class, "NTMLab2"); 
+		MapGenStructureIO.func_143031_a(NTMWorkshop1.class, "NTMWorkshop1"); 
+	}
+	
 	/** Sandstone Ruin 1 */
-	public static class NTMHouse1 extends Feature {
+	public static class NTMHouse1 extends Component {
 		
 		private boolean hasPlacedChest;
 		
@@ -79,11 +88,7 @@ public class CivilianFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < this.sizeX + 1; i++) {
-				for(byte j = 0; j < this.sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.sandstone, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.sandstone, 0, 0, 0, sizeX, sizeZ, -1, box);
 			
 			//Walls
 			this.fillWithRandomizedBlocks(world, box, 0, 0, 0, sizeX, 0, 0, false, rand, RandomSandstone); //Back Wall
@@ -124,7 +129,7 @@ public class CivilianFeatures {
 		
 	}
 	
-	public static class NTMHouse2 extends Feature {
+	public static class NTMHouse2 extends Component {
 		
 		private static Sandstone RandomSandstone = new Sandstone();
 		
@@ -163,17 +168,8 @@ public class CivilianFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < 7; i++) {
-				for(byte j = 0; j < this.sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.sandstone, 0, i, -1, j, box);
-				}
-			}
-			
-			for(byte i = 9; i < this.sizeX + 1; i++) {
-				for(byte j = 0; j < this.sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.sandstone, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.sandstone, 0, 0, 0, 6, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.sandstone, 0, 9, 0, sizeX, sizeZ, -1, box);
 			
 			this.fillWithAir(world, box, 1, 0, 1, 5, sizeY, sizeZ - 1);
 			
@@ -277,7 +273,7 @@ public class CivilianFeatures {
 		}
 	}
 	
-	public static class NTMLab1 extends Feature {
+	public static class NTMLab1 extends Component {
 		
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
 		private static LabTiles RandomLabTiles = new LabTiles();
@@ -318,21 +314,12 @@ public class CivilianFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < this.sizeX + 1; i++) {
-				for(byte j = 0; j < this.sizeZ - 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, j, box);
-				}
-			}
-			
-			for(byte i = 3; i < this.sizeX + 1; i++) {
-				for(byte j = 6; j < this.sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, sizeX, sizeZ - 2, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 3, 6, sizeX, sizeZ, -1, box);
 			
 			if(this.getBlockAtCurrentPosition(world, 2, 0, sizeZ - 1, box).getMaterial().isReplaceable() 
 					|| this.getBlockAtCurrentPosition(world, 2, 0, sizeZ - 1, box) == Blocks.air) {
-				this.func_151554_b(world, Blocks.stonebrick, 0, 2, -1, sizeZ - 1, box);
+				placeFoundationUnderneath(world, Blocks.stonebrick, 0, 2, sizeZ - 1, 2, sizeZ - 1, -1, box);
 				this.placeBlockAtCurrentPosition(world, Blocks.stone_brick_stairs, getStairMeta(0), 2, 0, sizeZ - 1, box);
 			}
 			
@@ -413,7 +400,7 @@ public class CivilianFeatures {
 		}
 	}
 	
-	public static class NTMLab2 extends Feature {
+	public static class NTMLab2 extends Component {
 		
 		private static SuperConcrete RandomSuperConcrete = new SuperConcrete();
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
@@ -455,23 +442,13 @@ public class CivilianFeatures {
 			this.boundingBox.offset(0, -7, 0);
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < sizeX + 1; i++) {
-				for(byte j = 0; j < sizeZ - 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, 6, j, box);
-				}
-			}
-			
-			for(byte i = 0; i < 7; i++) {
-				for(byte j = 7; j < sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, 6, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, sizeX, sizeZ - 2, 6, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 7, 6, sizeZ, 6, box);
 			
 			if(this.getBlockAtCurrentPosition(world, sizeX - 3, sizeY - 4, 7, box).getMaterial().isReplaceable() 
 					|| this.getBlockAtCurrentPosition(world, sizeX - 3, sizeY - 4, 7, box) == Blocks.air) {
 				int stairMeta = this.getMetadataWithOffset(Blocks.stone_brick_stairs, 2);
-				this.func_151554_b(world, Blocks.stonebrick, 0, sizeX - 3, sizeY - 4, 7, box);
-				this.func_151554_b(world, Blocks.stonebrick, 0, sizeX - 2, sizeY - 4, 7, box);
+				placeFoundationUnderneath(world, Blocks.stonebrick, 0, sizeX - 3, 7, sizeX - 2, 7, sizeY - 4, box);
 				this.fillWithMetadataBlocks(world, box, sizeX - 3, sizeY - 4, 7, sizeX - 2, sizeY - 4, 7, Blocks.stone_brick_stairs, stairMeta, Blocks.air, 0, false);
 			}
 			
@@ -591,13 +568,14 @@ public class CivilianFeatures {
 			this.fillWithBlocks(world, box, sizeX - 4, 3, sizeZ - 2, sizeX - 2, 3, sizeZ - 2, ModBlocks.steel_roof, Blocks.air, false);
 			if(!hasPlacedLoot[1]) {
 				this.hasPlacedLoot[1] = this.generateInvContents(world, box, rand, ModBlocks.crate_iron, sizeX - 2, 1, 3, HbmChestContents.nukeTrash, 9);
+				generateLoreBook(world, box, rand, sizeX - 2, 1, 3, 1, HbmChestContents.books_office_sch);
 			}
 			
 			return true;
 		}
 	}
 	
-	public static class NTMWorkshop1 extends Feature {
+	public static class NTMWorkshop1 extends Component {
 		
 		private static SuperConcrete RandomSuperConcrete = new SuperConcrete();
 		
@@ -633,17 +611,8 @@ public class CivilianFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 1; i < sizeX - 2; i++) {
-				for(byte j = 0; j < sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, j, box);
-				}
-			}
-			
-			for(byte i = 8; i < sizeX + 1; i++) {
-				for(byte j = 1; j < 7; j++) {
-					this.func_151554_b(world, Blocks.dirt, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 1, 0, sizeX - 3, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.dirt, 0, 8, 1, sizeX, 6, -1, box);
 			
 			this.fillWithAir(world, box, 1, 0, 0, sizeX - 3, sizeY - 2, sizeZ);
 			this.fillWithAir(world, box, sizeX - 2, 0, 2, sizeX - 1, 2, 5);
@@ -653,9 +622,7 @@ public class CivilianFeatures {
 				int stairMeta = this.getMetadataWithOffset(Blocks.stone_brick_stairs, 1);
 				this.placeBlockAtCurrentPosition(world, Blocks.stone_brick_stairs, stairMeta, 0, 0, 5, box);
 				
-				for(byte i = 1; 1 < sizeZ; i++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, 0, -1, i, box);
-				}
+				placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 1, 0, sizeZ - 1, -1, box);
 				
 				this.fillWithMetadataBlocks(world, box, 0, 0, 1, 0, 0, sizeZ - 1, Blocks.stone_slab, 5, Blocks.air, 0, false);
 			}

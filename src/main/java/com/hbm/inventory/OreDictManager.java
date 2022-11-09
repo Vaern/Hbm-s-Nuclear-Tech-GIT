@@ -18,7 +18,7 @@ import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
-import com.hbm.inventory.material.MatDistribution;
+import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.items.ItemEnums.EnumCokeType;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.main.MainRegistry;
@@ -53,6 +53,7 @@ public class OreDictManager {
 	public static final String KEY_SLAB = "slabWood";
 	public static final String KEY_LEAVES = "treeLeaves";
 	public static final String KEY_SAPLING = "treeSapling";
+	public static final String KEY_SAND = "sand";
 	
 	public static final String KEY_BLACK = "dyeBlack";
 	public static final String KEY_RED = "dyeRed";
@@ -170,6 +171,7 @@ public class OreDictManager {
 	public static final DictFrame DESH = new DictFrame("WorkersAlloy");
 	public static final DictFrame STAR = new DictFrame("Starmetal");
 	public static final DictFrame BIGMT = new DictFrame("Saturnite");
+	public static final DictFrame FERRO = new DictFrame("Ferrouranium");
 	public static final DictFrame EUPH = new DictFrame("Euphemium");
 	public static final DictFrame DNT = new DictFrame("Dineutronium");
 	public static final DictFrame FIBER = new DictFrame("Fiberglass");
@@ -191,6 +193,9 @@ public class OreDictManager {
 	public static final DictFrame CINNABAR = new DictFrame("Cinnabar");
 	public static final DictFrame BORAX = new DictFrame("Borax");
 	public static final DictFrame VOLCANIC = new DictFrame("Volcanic");
+	public static final DictFrame HEMATITE = new DictFrame("Hematite");
+	public static final DictFrame MALACHITE = new DictFrame("Malachite");
+	public static final DictFrame SLAG = new DictFrame("Slag");
 	/*
 	 * HAZARDS, MISC
 	 */
@@ -338,6 +343,7 @@ public class OreDictManager {
 		DESH		.nugget(nugget_desh)									.ingot(ingot_desh)													.dust(powder_desh)												.block(block_desh);
 		STAR																.ingot(ingot_starmetal)																												.block(block_starmetal)		.ore(ore_meteor_starmetal);
 		BIGMT																.ingot(ingot_saturnite)																				.plate(plate_saturnite);
+		FERRO																.ingot(ingot_ferrouranium);
 		EUPH		.nugget(nugget_euphemium)								.ingot(ingot_euphemium)												.dust(powder_euphemium)											.block(block_euphemium);
 		DNT			.nugget(nugget_dineutronium)							.ingot(ingot_dineutronium)											.dust(powder_dineutronium)										.block(block_dineutronium);
 		FIBER																.ingot(ingot_fiberglass)																											.block(block_fiberglass);
@@ -357,6 +363,9 @@ public class OreDictManager {
 		CINNABAR	.crystal(cinnebar)	.gem(cinnebar)																					.ore(ore_cinnebar, ore_depth_cinnebar);
 		BORAX																			.dust(powder_borax)								.ore(ore_depth_borax);
 		VOLCANIC						.gem(gem_volcanic)																				.ore(basalt_gem);
+		HEMATITE																														.ore(fromOne(stone_resource, EnumStoneType.HEMATITE));
+		MALACHITE																														.ore(fromOne(stone_resource, EnumStoneType.MALACHITE));
+		SLAG																									.block(block_slag);
 		
 		/*
 		 * HAZARDS, MISC
@@ -478,7 +487,7 @@ public class OreDictManager {
 		OreDictionary.registerOre("blockGlassRed", glass_polonium);
 		OreDictionary.registerOre("blockGlassBlack", glass_ash);
 		
-		MatDistribution.register(); //TEMP
+		MaterialShapes.registerCompatShapes();
 	}
 	
 	public static String getReflector() {

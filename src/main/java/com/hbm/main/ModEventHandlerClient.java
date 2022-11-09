@@ -25,8 +25,7 @@ import com.hbm.interfaces.IItemHUD;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.gui.GUIArmorTable;
-import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.items.ISyncButtons;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ArmorFSB;
 import com.hbm.items.armor.ArmorFSBPowered;
@@ -38,6 +37,7 @@ import com.hbm.lib.RefStrings;
 import com.hbm.packet.AuxButtonPacket;
 import com.hbm.packet.GunButtonPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.SyncButtonsPacket;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import com.hbm.render.block.ct.CTStitchReceiver;
@@ -436,6 +436,14 @@ public class ModEventHandlerClient {
 					item.startActionClient(player.getHeldItem(), player.worldObj, player, false);
 				}
 			}
+			
+			if(held instanceof ISyncButtons) {
+				ISyncButtons rec = (ISyncButtons) held;
+				
+				if(rec.canReceiveMouse(player, player.getHeldItem(), event, event.button, event.buttonstate)) {
+					PacketDispatcher.wrapper.sendToServer(new SyncButtonsPacket(event.buttonstate, event.button));
+				}
+			}
 		}
 	}
 	
@@ -634,13 +642,14 @@ public class ModEventHandlerClient {
 			list.add(EnumChatFormatting.GREEN + I18nUtil.resolveKey("cannery.f1"));
 		}
 		
-		List<MaterialStack> materials = Mats.getMaterialsFromItem(new ComparableStack(stack).makeSingular().toStack());
+		/*ItemStack copy = stack.copy();
+		List<MaterialStack> materials = Mats.getMaterialsFromItem(copy);
 		
 		if(!materials.isEmpty()) {
 			for(MaterialStack mat : materials) {
 				list.add(EnumChatFormatting.DARK_PURPLE + mat.material.names[0] + ": " + Mats.formatAmount(mat.amount * stack.stackSize));
 			}
-		}
+		}*/
 	}
 	
 	private ResourceLocation ashes = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_ash.png");
@@ -774,7 +783,7 @@ public class ModEventHandlerClient {
 							CanneryBase cannery = Jars.canneries.get(comp);
 							
 							if(cannery != null) {
-								FMLCommonHandler.instance().showGuiScreen(new GuiWorldInAJar(cannery.createScript(), cannery.getName(), cannery.getIcon()));
+								FMLCommonHandler.instance().showGuiScreen(new GuiWorldInAJar(cannery.createScript(), cannery.getName(), cannery.getIcon(), cannery.seeAlso()));
 							}
 							
 							break;
@@ -893,14 +902,18 @@ public class ModEventHandlerClient {
 
 		GL11.glPopMatrix();
 		
-		RenderOverhead.renderMarkers(event.partialTicks);
-
-		if(ArmorFSB.hasFSBArmor(player)) {
-			ItemStack plate = player.inventory.armorInventory[2];
-			ArmorFSB chestplate = (ArmorFSB) plate.getItem();
-
-			if(chestplate.thermal && HbmPlayerProps.getData(player).enableHUD)
-				RenderOverhead.renderThermalSight(event.partialTicks);
+		boolean hudOn = HbmPlayerProps.getData(player).enableHUD;
+		
+		if(hudOn) {
+			RenderOverhead.renderMarkers(event.partialTicks);
+	
+			if(ArmorFSB.hasFSBArmor(player)) {
+				ItemStack plate = player.inventory.armorInventory[2];
+				ArmorFSB chestplate = (ArmorFSB) plate.getItem();
+	
+				if(chestplate.thermal)
+					RenderOverhead.renderThermalSight(event.partialTicks);
+			}
 		}
 	}
 	

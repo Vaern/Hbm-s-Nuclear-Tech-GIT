@@ -2,12 +2,14 @@ package com.hbm.blocks.machine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.items.machine.ItemMold.Mold;
+import com.hbm.items.machine.ItemScraps;
 import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
 import com.hbm.util.I18nUtil;
 
@@ -15,10 +17,13 @@ import api.hbm.block.ICrucibleAcceptor;
 import api.hbm.block.IToolable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -104,7 +109,57 @@ public abstract class FoundryCastingBase extends BlockContainer implements ICruc
 			}
 		}
 		
+		if(player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemTool && ((ItemTool) player.getHeldItem().getItem()).getToolClasses(player.getHeldItem()).contains("shovel")) {
+			if(cast.amount > 0) {
+				ItemStack scrap = ItemScraps.create(new MaterialStack(cast.type, cast.amount));
+				if(!player.inventory.addItemStackToInventory(scrap)) {
+					EntityItem item = new EntityItem(world, x + 0.5, y + this.maxY, z + 0.5, scrap);
+					world.spawnEntityInWorld(item);
+				} else {
+					player.inventoryContainer.detectAndSendChanges();
+				}
+				cast.amount = 0;
+				cast.type = null;
+				cast.markDirty();
+				world.markBlockForUpdate(x, y, z);
+			}
+			return true;
+		}
+		
 		return false;
+	}
+
+	@Override
+	public void breakBlock(World world, int x, int y, int z, Block b, int i) {
+		
+		TileEntityFoundryCastingBase cast = (TileEntityFoundryCastingBase) world.getTileEntity(x, y, z);
+		if(cast.amount > 0) {
+			ItemStack scrap = ItemScraps.create(new MaterialStack(cast.type, cast.amount));
+			EntityItem item = new EntityItem(world, x + 0.5, y + this.maxY, z + 0.5, scrap);
+			world.spawnEntityInWorld(item);
+			cast.amount = 0; //just for safety
+		}
+		
+		for(ItemStack stack : cast.slots) {
+			if(stack != null) {
+				EntityItem drop = new EntityItem(world, x + 0.5, y + this.maxY, z + 0.5, stack.copy());
+				world.spawnEntityInWorld(drop);
+			}
+		}
+		
+		super.breakBlock(world, x, y, z, b, i);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
+		super.randomDisplayTick(world, x, y, z, rand);
+		
+		TileEntityFoundryCastingBase cast = (TileEntityFoundryCastingBase) world.getTileEntity(x, y, z);
+
+		if(cast.amount > 0 && cast.amount >= cast.getCapacity()) {
+			world.spawnParticle("smoke", x + 0.25 + rand.nextDouble() * 0.5, y + this.maxY, z + 0.25 + rand.nextDouble() * 0.5, 0.0, 0.0, 0.0);
+		}
 	}
 
 	@Override

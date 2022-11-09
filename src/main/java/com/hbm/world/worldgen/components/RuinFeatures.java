@@ -6,11 +6,19 @@ import com.hbm.blocks.ModBlocks;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 public class RuinFeatures {
 	
-	public static class NTMRuin1 extends Feature {
+	public static void registerComponents() {
+		MapGenStructureIO.func_143031_a(NTMRuin1.class, "NTMRuin1");
+		MapGenStructureIO.func_143031_a(NTMRuin2.class, "NTMRuin2");
+		MapGenStructureIO.func_143031_a(NTMRuin3.class, "NTMRuin3");
+		MapGenStructureIO.func_143031_a(NTMRuin4.class, "NTMRuin4");
+	}
+	
+	public static class NTMRuin1 extends Component {
 		
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
 		
@@ -31,11 +39,7 @@ public class RuinFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < sizeX + 1; i++) {
-				for(byte j = 0; j < sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, sizeX, sizeZ, -1, box);
 			
 			int pillarMetaWE = this.getPillarMeta(4);
 			int pillarMetaNS = this.getPillarMeta(8);
@@ -86,7 +90,7 @@ public class RuinFeatures {
 		}
 	}
 	
-	public static class NTMRuin2 extends Feature {
+	public static class NTMRuin2 extends Component {
 		
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
 		
@@ -107,11 +111,7 @@ public class RuinFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < sizeX + 1; i++) {
-				for(byte j = 0; j < sizeZ + 1; j++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, j, box);
-				}
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, sizeX, sizeZ, -1, box);
 			
 			int pillarMetaWE = this.getPillarMeta(4);
 			int pillarMetaNS = this.getPillarMeta(8);
@@ -153,7 +153,7 @@ public class RuinFeatures {
 		}
 	}
 	
-	public static class NTMRuin3 extends Feature {
+	public static class NTMRuin3 extends Component {
 		
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
 		
@@ -174,15 +174,11 @@ public class RuinFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < sizeZ + 1; i++) {
-					this.func_151554_b(world, Blocks.stonebrick, 0, 0, -1, i, box);
-					this.func_151554_b(world, Blocks.stonebrick, 0, sizeX, -1, i, box);
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, 0, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, sizeX, 0, sizeX, sizeZ, -1, box);
 			
-			for(byte i = 1; i < sizeX; i++) {
-				this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, 0, box);
-				this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, 4, box);
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 1, 0, sizeX, 0, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 1, 4, sizeX, 4, -1, box);
 			
 			this.fillWithBlocks(world, box, 0, 0, 0, 0, sizeY, 0, ModBlocks.concrete_pillar, Blocks.air, false); //Back Wall
 			this.fillWithBlocks(world, box, sizeX, 0, 0, sizeX, 1, 0, ModBlocks.concrete_pillar, Blocks.air, false);
@@ -214,7 +210,7 @@ public class RuinFeatures {
 		}
 	}
 	
-	public static class NTMRuin4 extends Feature {
+	public static class NTMRuin4 extends Component {
 		
 		private static ConcreteBricks RandomConcreteBricks = new ConcreteBricks();
 		
@@ -235,15 +231,14 @@ public class RuinFeatures {
 			}
 			//System.out.println("" + this.boundingBox.minX + ", " + this.boundingBox.minY + ", " + this.boundingBox.minZ);
 			
-			for(byte i = 0; i < sizeZ + 1; i++) {
-				this.func_151554_b(world, Blocks.stonebrick, 0, 0, -1, i, box);
-				this.func_151554_b(world, Blocks.stonebrick, 0, i >= 5 ? sizeX : 5, -1, i, box); //elegant solution
-			}
 			
-			for(byte i = 1; i < sizeX; i++) {
-				this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, sizeZ, box);
-				this.func_151554_b(world, Blocks.stonebrick, 0, i, -1, i > 4 ? 5 : 0, box); //ternary operators my beloved
-			}
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 0, 0, 0, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, sizeX, 5, sizeX, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 5, 0, 5, 4, -1, box);
+			
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 1, sizeZ, sizeX - 1, sizeZ, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 1, 0, 4, 0, -1, box);
+			placeFoundationUnderneath(world, Blocks.stonebrick, 0, 5, 5, sizeX - 1, 5, -1, box);
 			
 			this.fillWithBlocks(world, box, 0, 0, 0, 0, 1, 0, ModBlocks.concrete_pillar, Blocks.air, false); //Back Wall Pt. 1
 			this.fillWithBlocks(world, box, 5, 0, 0, 5, sizeY, 0, ModBlocks.concrete_pillar, Blocks.air, false);

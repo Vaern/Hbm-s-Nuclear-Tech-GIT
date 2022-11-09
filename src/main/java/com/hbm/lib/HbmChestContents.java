@@ -1,12 +1,12 @@
 package com.hbm.lib;
 
-import java.util.Random;
+import java.util.HashMap;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBreedingRod.*;
-import com.hbm.util.I18nUtil;
+import com.hbm.items.special.ItemBookLore.BookLoreType;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -15,7 +15,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.WeightedRandomChestContent;
-import net.minecraft.world.World;
 
 public class HbmChestContents {
 
@@ -354,33 +353,31 @@ public class HbmChestContents {
 			new WeightedRandomChestContent(ModItems.can_creature, 0, 1, 2, 2),
 			new WeightedRandomChestContent(ModItems.can_smart, 0, 1, 3, 2),
 			new WeightedRandomChestContent(ModItems.can_mrsugar, 0, 1, 2, 2),
+			new WeightedRandomChestContent(ModItems.cap_nuka, 0, 1, 16, 2),
 			new WeightedRandomChestContent(ModItems.book_guide, 3, 1, 1, 1),
 			new WeightedRandomChestContent(Item.getItemFromBlock(ModBlocks.deco_computer), 0, 1, 1, 1)};
 	
-	/** Nowhere else to put this and this seems like the most fitting place **/
-	public static ItemStack genetateBook(String key) {
-		
-		String author = I18nUtil.resolveKey("book.lore." + key + ".author");
-		String title = I18nUtil.resolveKey("book.lore." + key + ".title");
-		
-		ItemStack book = new ItemStack(Items.written_book);
-		book.stackTagCompound = new NBTTagCompound();
-		book.stackTagCompound.setString("author", author);
-		book.stackTagCompound.setString("title", title);
-		NBTTagList nbt = new NBTTagList();
-		
-		for(byte i = 1; i <= 50; i++) {
-			String unloc = "book.lore." + key + ".page" + i;
-			String page = I18nUtil.resolveKey(unloc);
-			
-			if(page.equals(unloc))
-				break;
-			else
-				nbt.appendTag(new NBTTagString(page));
-		}
-		
-		book.stackTagCompound.setTag("pages", nbt);
-		
-		return book;
-	}
+	public static WeightedRandomChestContent[] filingCabinet = new WeightedRandomChestContent[] {
+			new WeightedRandomChestContent(Items.paper, 0, 1, 12, 240),
+			new WeightedRandomChestContent(Items.book, 0, 1, 3, 90),
+			new WeightedRandomChestContent(Items.map, 0, 1, 1, 50),
+			new WeightedRandomChestContent(Items.writable_book, 0, 1, 1, 30),
+			new WeightedRandomChestContent(ModItems.cigarette, 0, 1, 16, 20),
+			new WeightedRandomChestContent(ModItems.toothpicks, 0, 1, 16, 10),
+			new WeightedRandomChestContent(ModItems.dust, 0, 1, 1, 40),
+			new WeightedRandomChestContent(ModItems.dust_tiny, 0, 1, 3, 75),
+			new WeightedRandomChestContent(ModItems.ink, 0, 1, 1, 1), //make that mf rare; 1:555 weight
+	};
+	
+	/** ITEMBOOKLORE ARRAYS */
+	//might make a wrapper class for this, if game-state knowledge using the nbt system becomes that relevant
+	public final static BookLoreType[] books_office_sch = new BookLoreType[] {
+			BookLoreType.RESIGNATION_NOTE,
+			BookLoreType.MEMO_STOCKS,
+			BookLoreType.MEMO_SCHRAB_GSA,
+			BookLoreType.MEMO_SCHRAB_RD,
+			BookLoreType.MEMO_SCHRAB_NUKE,
+	};
+	
+	
 }
