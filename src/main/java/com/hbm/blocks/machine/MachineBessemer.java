@@ -29,6 +29,21 @@ public class MachineBessemer extends BlockDummyable {
 	}
 	
 	@Override
+	public int getRenderType() {
+		return 0;
+	}
+
+	@Override
+	public boolean isOpaqueCube() {
+		return true;
+	}
+
+	@Override
+	public boolean renderAsNormalBlock() {
+		return true;
+	}
+	
+	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
 		return this.standardOpenBehavior(world, x, y, z, player, 0);
 	}

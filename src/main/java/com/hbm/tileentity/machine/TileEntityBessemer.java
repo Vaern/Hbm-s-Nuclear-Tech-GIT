@@ -30,12 +30,6 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	public static int metalCapacity = MaterialShapes.BLOCK.q(24);
 	public static int additiveCapacity = MaterialShapes.BLOCK.q(12);
 	
-	/*public final int metalCapacity = MaterialShapes.BLOCK.q(24); TODO: remove these other fields in favor of the above */
-	public final int carbonCapacity = MaterialShapes.BLOCK.q(20);
-	public MaterialStack iron = new MaterialStack(Mats.MAT_IRON, 0);
-	public MaterialStack steel = new MaterialStack(Mats.MAT_STEEL, 0);
-	public int carbon = 0; //We only care about the amount of carbon, not if it was from petcoke or coal coke or whatever
-	
 	public boolean isProgressing = false;
 	
 	public boolean automatic = false;
@@ -92,9 +86,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			}*/
 			
 			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("ironAmt", iron.amount);
-			data.setInteger("steelAmt", steel.amount);
-			data.setInteger("carbon", carbon);
+			//TODO materialstacks 
 			data.setBoolean("auto", automatic);
 			data.setBoolean("pour", isPouring);
 			data.setFloat("angle", angle); //see below
@@ -119,9 +111,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	
 	@Override
 	public void networkUnpack(NBTTagCompound data) {
-		iron.amount = data.getInteger("ironAmt");
-		steel.amount = data.getInteger("steelAmt");
-		carbon = data.getInteger("carbon");
+		
 		automatic = data.getBoolean("auto");
 		isPouring = data.getBoolean("pour");
 		angle = data.getFloat("angle"); //see above
@@ -130,9 +120,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	@Override
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
-		nbt.setInteger("ironAmt", iron.amount);
-		nbt.setInteger("steelAmt", steel.amount);
-		nbt.setInteger("carbon", carbon);
+		//TODO materialstacks 
 		nbt.setBoolean("auto", automatic);
 		nbt.setBoolean("pour", isPouring);
 		nbt.setFloat("angle", angle);
@@ -141,9 +129,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
-		iron.amount = nbt.getInteger("ironAmt");
-		steel.amount = nbt.getInteger("steelAmt");
-		carbon = nbt.getInteger("carbon");
+		//TODO materialstacks 
 		automatic = nbt.getBoolean("auto");
 		isPouring = nbt.getBoolean("pour");
 		angle = nbt.getFloat("angle");
@@ -185,8 +171,12 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		return stack;
 	}
 	
-	public boolean canConvert() {
-		return !isPouring && iron.amount > 0 && carbon > 0;
+	private boolean canConvert() {
+		return !isPouring && metalStack.contains(additiveStack);
+	}
+	
+	private void convert() {
+		
 	}
 	
 	@Override
@@ -199,7 +189,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		if(data.getBoolean("toggle"))
 			this.automatic = !automatic;
 		
-		if(data.getBoolean("pour") && !isPouring && steel.amount > 0) //add shit to see if all contained iron has been converted/there's any steel inside
+		if(data.getBoolean("pour") && !isPouring && !isProgressing)
 			isPouring = true;
 	}
 }
