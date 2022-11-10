@@ -56,21 +56,9 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			
 			//isItemSmeltable(slots[0]);
 			
-			if(canConvert()) {
+			if(!tryConvert())
 				
-				int converted = iron.amount >= MaterialShapes.INGOT.q(1) ? Math.max(iron.amount, MaterialShapes.INGOT.q(1)) : iron.amount;
-				converted = Math.min(converted, carbon);
-				
-				carbon -= converted;
-				iron.amount -= converted;
-				steel.amount += converted;
-				
-			} else {
-				isProgressing = false;
-			}
-			
-			//Whether or not it'll just check for steel content or will also check for unconverted iron, i don't know. i'll figure it out laterr
-			if(automatic && !canConvert() && steel.amount > 0) //wait until all potential steel is converted
+			else if(automatic && !canConvert() && steel.amount > 0) //wait until all potential steel is converted
 				isPouring = true;
 			
 			/*if(angle >= maxAngle && isPouring && steel.amount > 0) {
@@ -140,7 +128,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	@Override
 	public boolean canAcceptPartialPour(World world, int x, int y, int z, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
 		if(side != ForgeDirection.UP) return false;
-		if(stack.material != iron.material && iron.amount + steel.amount >= metalCapacity) return false;
+		if(stack.material != Mats.MAT_IRON && getQuantaFromType() >= metalCapacity) return false;
 		//TODO: check where the pour is hitting here using forge direction; also check isPouring
 		if(isPouring || angle > 0) return false;
 		return true;
@@ -148,13 +136,37 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 
 	@Override
 	public MaterialStack pour(World world, int x, int y, int z, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
-		if(stack.amount + iron.amount <= metalCapacity) {
-			iron.amount += stack.amount;
+		
+		if(stack.material == additiveStack.material) {
+			if(additiveStack.amount + stack.amount <= additiveCapacity) {
+				additiveStack.amount += stack.amount;
+				return null;
+			}
+			
+			int required = additiveCapacity - additiveStack.amount;
+			additiveStack.amount += required;
+			
+			stack.amount -= required;
+			
+			return stack;
+		}
+		
+		int metalAmount = getQuantaFromType(metalStack, null);
+		
+		if(metalAmount + stack.amount <= metalCapacity) {
+			addToStack(metalStack, stack);
 			return null;
 		}
 		
-		int required = metalCapacity - (iron.amount + steel.amount);
-		iron.amount += required;
+		int required = metalCapacity - metalAmount;
+		
+		for(MaterialStack stack0ν0 : metalStack) {
+			if(stack0ν0.material == stack.material) {
+				stack0ν0.amount += stack.amount; break;
+			}
+			
+			metalStack.add(new MaterialStack(stack.material, required));
+		}
 		
 		stack.amount -= required;
 		
@@ -175,8 +187,59 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		return !isPouring && metalStack.contains(additiveStack);
 	}
 	
-	private void convert() {
+	private boolean tryConvert() {
 		
+		if(worldObj.getTotalWorldTime() % 2 > 0) return false;
+		//this code is so fucking exceedingly abysmal to me and it's pretty par for the course. someone shoot me
+		int iron = Math.min(getQuantaFromType(metalStack, Mats.MAT_IRON), MaterialShapes.INGOT.q(2));
+		int additive = additiveStack.amount;
+		
+		if(iron < MaterialShapes.NUGGET.q(3)) return false;
+		if(additive < MaterialShapes.NUGGET.q(1)) return false;
+		
+		int converted = Math.min(iron, additive * 3);
+		
+		for(MaterialStack stack : metalStack) {
+			if(stack.material == Mats.MAT_IRON)
+				stack.amount -= converted;
+		}
+		
+		additiveStack.amount -= converted / 3;
+		
+		for(MaterialStack stack : this.metalStack) {
+			if(stack.material == Mats.MAT_STEEL) {
+				stack.amount += converted;
+				break;
+			}
+			
+			this.metalStack.add(new MaterialStack(Mats.MAT_STEEL, converted));
+		}
+		
+		return true;
+	}
+	
+	public int getQuantaFromType(List<MaterialStack> stacks, NTMMaterial mat) {
+		int Σ = 0;
+		for(MaterialStack oωo : stacks) {
+			if(oωo.material == mat) {
+				return oωo.amount;
+			}
+			if(mat == null) {
+				Σ += oωo.amount;
+			}
+		}
+		return Σ;
+	}
+	
+	public void addToStack(List<MaterialStack> stack, MaterialStack matStack) {	
+		for(MaterialStack mat : stack) {
+			if(mat.material == matStack.material) {
+				mat.amount += matStack.amount;
+				return;
+			}
+		}
+		
+		stack.add(matStack.copy());
 	}
 	
 	@Override
