@@ -24,6 +24,7 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyGenerator;
+import api.hbm.fluid.IFluidStandardReceiver;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
@@ -32,7 +33,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implements ISidedInventory, IEnergyGenerator, IFluidContainer, IFluidAcceptor, IConfigurableMachine {
+public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implements ISidedInventory, IEnergyGenerator, IFluidContainer, IFluidAcceptor, IFluidStandardReceiver, IConfigurableMachine {
 
 	private ItemStack slots[];
 
@@ -44,14 +45,14 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 
 	public static long maxPower = 250000;
 	public static int fluidCap = 16000;
-	public static double pistonExp = 1.15D;
+	public static double pistonExp = 1.0D;
 	public static boolean shutUp = false;
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.LOW,		1.0D);
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.75D);
-		fuelEfficiency.put(FuelGrade.HIGH,		0.5D);
-		fuelEfficiency.put(FuelGrade.AERO,		0.05D);
+		fuelEfficiency.put(FuelGrade.LOW,		0.75D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.5D);
+		fuelEfficiency.put(FuelGrade.HIGH,		0.25D);
+		fuelEfficiency.put(FuelGrade.AERO,		0.00D);
 	}
 
 	private static final int[] slots_top = new int[] { 0 };
@@ -231,6 +232,7 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 		
 		if (!worldObj.isRemote) {
 			
+			this.subscribeToAllAround(tank.getTankType(), this);
 			this.sendPower(worldObj, xCoord, yCoord - 1, zCoord, ForgeDirection.DOWN);
 			
 			pistonCount = countPistons();
@@ -400,5 +402,15 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 		}
 		writer.endArray().setIndent("  ");
 		writer.name("B:shutUp").value(shutUp);
+	}
+
+	@Override
+	public FluidTank[] getAllTanks() {
+		return new FluidTank[] {tank};
+	}
+
+	@Override
+	public FluidTank[] getReceivingTanks() {
+		return new FluidTank[] {tank};
 	}
 }

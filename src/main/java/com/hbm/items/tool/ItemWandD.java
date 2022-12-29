@@ -4,23 +4,31 @@ import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.effect.EntityNukeTorex;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.entity.logic.EntityTomBlast;
 import com.hbm.entity.mob.siege.EntitySiegeTunneler;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemBookLore;
 import com.hbm.items.special.ItemBookLore.BookLoreType;
 import com.hbm.items.special.ItemKitCustom;
 import com.hbm.lib.Library;
+import com.hbm.saveddata.TomSaveData;
 import com.hbm.world.feature.OilSpot;
 
+import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityTracker;
+import net.minecraft.entity.EntityTrackerEntry;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IntHashMap;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.MapGenStronghold;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
@@ -35,6 +43,19 @@ public class ItemWandD extends Item {
 		MovingObjectPosition pos = Library.rayTrace(player, 500, 1, false, true, false);
 		
 		if(pos != null) {
+			
+			/*TomSaveData data = TomSaveData.forWorld(world);
+			data.impact = false;
+			data.fire = 0F;
+			data.dust = 0F;
+			data.markDirty();*/
+			
+			/*EntityTomBlast tom = new EntityTomBlast(world);
+			tom.posX = pos.blockX;
+			tom.posY = pos.blockY;
+			tom.posZ = pos.blockZ;
+			tom.destructionRange = 600;
+			world.spawnEntityInWorld(tom);*/
 			
 			/*ItemStack itemStack = new ItemStack(ModItems.book_lore);
 			BookLoreType.setTypeForStack(itemStack, BookLoreType.BOOK_IODINE);
@@ -53,9 +74,19 @@ public class ItemWandD extends Item {
 			
 			/*OilSpot.generateOilSpot(world, pos.blockX, pos.blockZ, 20, 500);*/
 			
-			/*EntityNukeTorex torex = new EntityNukeTorex(world);
+			EntityNukeTorex torex = new EntityNukeTorex(world);
 			torex.setPositionAndRotation(pos.blockX, pos.blockY + 1, pos.blockZ, 0, 0);
-			world.spawnEntityInWorld(torex);*/
+			torex.getDataWatcher().updateObject(10, 1.5F);
+			world.spawnEntityInWorld(torex);
+			
+            EntityTracker entitytracker = ((WorldServer)world).getEntityTracker();
+            //ReflectionHelper.setPrivateValue(EntityTracker.class, entitytracker, 1000, "entityViewDistance");
+            
+            IntHashMap map = ReflectionHelper.getPrivateValue(EntityTracker.class, entitytracker, "trackedEntityIDs", "field_72794_c");
+            EntityTrackerEntry entry = (EntityTrackerEntry) map.lookup(torex.getEntityId());
+            entry.blocksDistanceThreshold = 1000;
+			
+			world.spawnEntityInWorld(EntityNukeExplosionMK5.statFacNoRad(world, 150, pos.blockX, pos.blockY + 1, pos.blockZ));
 			
 			/*EntitySiegeTunneler tunneler = new EntitySiegeTunneler(world);
 			tunneler.setPosition(pos.blockX, pos.blockY + 1, pos.blockZ);

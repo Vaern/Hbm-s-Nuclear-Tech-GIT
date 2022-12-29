@@ -178,6 +178,15 @@ public class AnvilRecipes {
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(TI.ingot(), 1), new AnvilOutput(new ItemStack(ModBlocks.deco_titanium))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(W.ingot(), 1), new AnvilOutput(new ItemStack(ModBlocks.deco_tungsten))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 
+		for(int i = 0; i < 15; i += 3) {
+			constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(IRON.plate(), 1), new AnvilOutput(new ItemStack(ModBlocks.fluid_duct_box, 1, i))).setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+			constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(CU.plate(), 1), new AnvilOutput(new ItemStack(ModBlocks.fluid_duct_box, 1, i + 1))).setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+			constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(AL.plate(), 1), new AnvilOutput(new ItemStack(ModBlocks.fluid_duct_box, 1, i + 2))).setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+			constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.fluid_duct_box, 1, i), new AnvilOutput(new ItemStack(ModItems.plate_iron))).setTier(2).setOverlay(OverlayType.RECYCLING));
+			constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.fluid_duct_box, 1, i + 1), new AnvilOutput(new ItemStack(ModItems.plate_copper))).setTier(2).setOverlay(OverlayType.RECYCLING));
+			constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.fluid_duct_box, 1, i + 2), new AnvilOutput(new ItemStack(ModItems.plate_aluminium))).setTier(2).setOverlay(OverlayType.RECYCLING));
+		}
+
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {new OreDictStack(DNT.ingot(), 4), new ComparableStack(ModBlocks.depth_brick)},
 				new AnvilOutput(new ItemStack(ModBlocks.depth_dnt))).setTier(1916169));
@@ -259,12 +268,29 @@ public class AnvilRecipes {
 
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
+						new OreDictStack(RUBBER.ingot(), 4),
+						new OreDictStack(CU.ingot(), 16),
+						new OreDictStack(STEEL.plate(), 16),
+						new ComparableStack(ModItems.pipes_steel, 1),
+				}, new AnvilOutput(new ItemStack(ModBlocks.heater_heatex))).setTier(3));
+
+		constructionRecipes.add(new AnvilConstructionRecipe(
+				new AStack[] {
 						new ComparableStack(Blocks.stonebrick, 16),
 						new OreDictStack(IRON.ingot(), 4),
 						new OreDictStack(STEEL.plate(), 16),
 						new OreDictStack(CU.ingot(), 8),
 						new ComparableStack(ModBlocks.steel_grate, 16)
 				}, new AnvilOutput(new ItemStack(ModBlocks.furnace_steel))).setTier(2));
+
+		constructionRecipes.add(new AnvilConstructionRecipe(
+				new AStack[] {
+						new ComparableStack(Blocks.stonebrick, 8),
+						new OreDictStack(KEY_LOG, 16),
+						new OreDictStack(CU.ingot(), 8),
+						new OreDictStack(KEY_BRICK, 16),
+						new ComparableStack(Items.blaze_powder, 4)
+				}, new AnvilOutput(new ItemStack(ModBlocks.furnace_combination))).setTier(2));
 
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
@@ -283,6 +309,15 @@ public class AnvilRecipes {
 						new ComparableStack(ModItems.coil_gold, 16),
 						new ComparableStack(ModItems.gear_large, 1, 1)
 				}, new AnvilOutput(new ItemStack(ModBlocks.machine_stirling_steel))).setTier(2));
+
+		constructionRecipes.add(new AnvilConstructionRecipe(
+				new AStack[] {
+						new ComparableStack(ModBlocks.reinforced_stone, 16),
+						new OreDictStack(STEEL.plate(), 12),
+						new ComparableStack(ModItems.hull_small_steel, 2),
+						new ComparableStack(ModItems.coil_copper, 8),
+						new ComparableStack(ModItems.gear_large, 1)
+				}, new AnvilOutput(new ItemStack(ModBlocks.machine_steam_engine))).setTier(2));
 
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
@@ -865,7 +900,7 @@ public class AnvilRecipes {
 				new ComparableStack(ModBlocks.machine_turbine), new AnvilOutput[] {
 						new AnvilOutput(new ItemStack(ModItems.turbine_titanium, 1)),
 						new AnvilOutput(new ItemStack(ModItems.coil_copper, 2)),
-						new AnvilOutput(new ItemStack(ModItems.ingot_steel, 6))
+						new AnvilOutput(new ItemStack(ModItems.ingot_steel, 4))
 						}).setTier(3));
 		
 		constructionRecipes.add(new AnvilConstructionRecipe(

@@ -51,7 +51,6 @@ public class NEIConfig implements IConfigureNEI {
 		registerHandler(new CrucibleSmeltingHandler());
 		registerHandler(new CrucibleAlloyingHandler());
 		registerHandler(new CrucibleCastingHandler());
-		registerHandler(new ChunkyHandler());
 		
 		//universal boyes
 		registerHandler(new ZirnoxRecipeHandler());
@@ -62,6 +61,11 @@ public class NEIConfig implements IConfigureNEI {
 		registerHandler(new SolidificationHandler());
 		registerHandler(new CrackingHandler());
 		registerHandler(new FractioningHandler());
+		registerHandler(new BoilingHandler());
+		registerHandler(new CombinationHandler());
+		registerHandler(new SawmillHandler());
+		
+		registerHandler(new ChunkyHandler());
 
 		//Some things are even beyond my control...or are they?
 		API.hideItem(ItemBattery.getEmptyBattery(ModItems.memory));
@@ -82,8 +86,6 @@ public class NEIConfig implements IConfigureNEI {
 		API.hideItem(new ItemStack(ModBlocks.transission_hatch));
 		API.hideItem(new ItemStack(ModItems.euphemium_kit));
 		API.hideItem(new ItemStack(ModItems.bobmazon_hidden));
-		API.hideItem(new ItemStack(ModItems.coin_siege));
-		API.hideItem(new ItemStack(ModItems.source));
 		if(MainRegistry.polaroidID != 11) {
 			API.hideItem(new ItemStack(ModItems.book_secret));
 			API.hideItem(new ItemStack(ModItems.book_of_));
@@ -92,7 +94,6 @@ public class NEIConfig implements IConfigureNEI {
 		}
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_assembler));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_drill));
-		API.hideItem(new ItemStack(ModBlocks.dummy_block_fluidtank));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_refinery));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_turbofan));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_ams_base));
@@ -104,7 +105,6 @@ public class NEIConfig implements IConfigureNEI {
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_puf6));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_assembler));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_drill));
-		API.hideItem(new ItemStack(ModBlocks.dummy_port_fluidtank));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_refinery));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_turbofan));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_ams_base));
