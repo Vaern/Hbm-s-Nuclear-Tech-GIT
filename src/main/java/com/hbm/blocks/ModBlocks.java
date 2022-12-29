@@ -664,6 +664,8 @@ public class ModBlocks {
 	public static Block machine_sawmill;
 	public static Block machine_crucible;
 	public static Block machine_boiler;
+	
+	public static Block machine_bessemer;
 
 	public static Block foundry_mold;
 	public static Block foundry_basin;
@@ -1857,6 +1859,8 @@ public class ModBlocks {
 		machine_sawmill = new MachineSawmill().setBlockName("machine_sawmill").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":block_steel");
 		machine_crucible = new MachineCrucible().setBlockName("machine_crucible").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":brick_fire");
 		machine_boiler = new MachineHeatBoiler().setBlockName("machine_boiler").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":block_copper");
+		
+		machine_bessemer = new MachineBessemer().setBlockName("machine_bessemer").setHardness(10.0F).setResistance(15.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":block_steel");
 		
 		foundry_mold = new FoundryMold().setBlockName("foundry_mold").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":brick_fire");
 		foundry_basin = new FoundryBasin().setBlockName("foundry_basin").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab).setBlockTextureName(RefStrings.MODID + ":brick_fire");
@@ -3054,6 +3058,7 @@ public class ModBlocks {
 		register(machine_sawmill);
 		register(machine_crucible);
 		register(machine_boiler);
+		GameRegistry.registerBlock(machine_bessemer, machine_bessemer.getUnlocalizedName());
 		register(foundry_mold);
 		register(foundry_basin);
 		register(foundry_channel);

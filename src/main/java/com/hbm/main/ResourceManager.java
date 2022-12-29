@@ -71,6 +71,9 @@ public class ResourceManager {
 	public static final IModelCustom boiler = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/boiler.obj"));
 	public static final IModelCustom boiler_burst = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/boiler_burst.obj"));
 	
+	//Bessemer
+	public static final IModelCustom bessemer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/bessemer.obj")).asDisplayList();
+	
 	//Furnaces
 	public static final IModelCustom furnace_iron = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/machines/furnace_iron.obj"));
 	public static final IModelCustom furnace_steel = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/machines/furnace_steel.obj"));

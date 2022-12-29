@@ -18,11 +18,40 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IControlReceiver { //implements IGUIProvider {:3
+	
+	AxisAlignedBB bb = null;
+	
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		
+		if(bb == null) {
+			bb = AxisAlignedBB.getBoundingBox(
+					xCoord - 5,
+					yCoord - 3,
+					zCoord - 5,
+					xCoord + 6,
+					yCoord + 5,
+					zCoord + 6
+					);
+		}
+		
+		return bb;
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getMaxRenderDistanceSquared() {
+		return 65536.0D;
+	}
+	
+	
+	
 	//please help i'm going mental :3
 	public List<MaterialStack> metalStack = new ArrayList();
 	public MaterialStack additiveStack = null; //just carbon for now
@@ -48,20 +77,22 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	public String getName() {
 		return "container.machineBessemer";
 	}
-
+	
+	//TODO: throw all of this out, start from ground zero.
+	
 	@Override
 	public void updateEntity() {
 		
 		if(!worldObj.isRemote) {
 			
-			//isItemSmeltable(slots[0]);
+			/*isItemSmeltable(slots[0]);
 			
 			if(!tryConvert())
 				
 			else if(automatic && !canConvert() && steel.amount > 0) //wait until all potential steel is converted
 				isPouring = true;
 			
-			/*if(angle >= maxAngle && isPouring && steel.amount > 0) {
+			if(angle >= maxAngle && isPouring && steel.amount > 0) {
 				//empty as much of contents as possible until target block is filled/this is empty
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 				Vec3 impact = Vec3.createVectorHelper(0, 0, 0);
@@ -71,7 +102,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 				
 				if(returnStack == null || (returnStack != null && returnStack.amount <= 0))
 					isPouring = false;
-			}*/
+			}
 			
 			NBTTagCompound data = new NBTTagCompound();
 			//TODO materialstacks 
@@ -79,7 +110,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			data.setBoolean("pour", isPouring);
 			data.setFloat("angle", angle); //see below
 			this.networkPack(data, 50);
-		} else {
+		*/} /*else {
 			
 			if(isProgressing) {
 				//literal fire particle effects :333333333333333333333
@@ -94,7 +125,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		if(angle < maxAngle || angle > 0)
 			angle += isPouring ? 1.8F : -1.8F; //1.8 degrees every tick > 50 ticks for full 90 degrees
 		else
-			angle = angle >= maxAngle ? maxAngle : 0;
+			angle = angle >= maxAngle ? maxAngle : 0;*/
 	}
 	
 	@Override
@@ -128,7 +159,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	@Override
 	public boolean canAcceptPartialPour(World world, int x, int y, int z, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
 		if(side != ForgeDirection.UP) return false;
-		if(stack.material != Mats.MAT_IRON && getQuantaFromType() >= metalCapacity) return false;
+		//if(stack.material != Mats.MAT_IRON && getQuantaFromType() >= metalCapacity) return false;
 		//TODO: check where the pour is hitting here using forge direction; also check isPouring
 		if(isPouring || angle > 0) return false;
 		return true;

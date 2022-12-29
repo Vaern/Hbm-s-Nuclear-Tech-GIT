@@ -56,7 +56,7 @@ public class MultiblockHandlerXR {
 		int[] rot = rotate(dim, dir);
 		
 		BlockDummyable.safeRem = true;
-
+		
 		for(int a = x - rot[4]; a <= x + rot[5]; a++) {
 			for(int b = y - rot[1]; b <= y + rot[0]; b++) {
 				for(int c = z - rot[2]; c <= z + rot[3]; c++) {
