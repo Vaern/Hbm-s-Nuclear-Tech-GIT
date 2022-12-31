@@ -1,13 +1,7 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.material.MaterialShapes;
-import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.container.ContainerBessemer;
+import com.hbm.inventory.gui.GUIBessemer;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -15,15 +9,58 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import api.hbm.block.ICrucibleAcceptor;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.inventory.Container;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IControlReceiver { //implements IGUIProvider {:3
+public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IGUIProvider { //, IControlReceiver { //implements IGUIProvider {:3
+	
+	public TileEntityBessemer() {
+		super(11);
+	}
+	
+	@Override
+	public String getName() {
+		return "container.bessemer";
+	}
+	
+	@Override
+	public void updateEntity() {
+		
+		if(!worldObj.isRemote) {
+			
+		}
+		
+	}
+	
+	@Override
+	public boolean canAcceptPartialPour(World world, int x, int y, int z, double dX, double dY, double dZ,
+			ForgeDirection side, MaterialStack stack) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public MaterialStack pour(World world, int x, int y, int z, double dX, double dY, double dZ, ForgeDirection side,
+			MaterialStack stack) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean canAcceptPartialFlow(World world, int x, int y, int z, ForgeDirection side, MaterialStack stack) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public MaterialStack flow(World world, int x, int y, int z, ForgeDirection side, MaterialStack stack) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	AxisAlignedBB bb = null;
 	
@@ -49,8 +86,20 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
 	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerBessemer(player.inventory, this);
+	}
+
+	@Override
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIBessemer(player.inventory, this);
+	}
 	
-	
+}
+
+	/*
 	
 	//please help i'm going mental :3
 	public List<MaterialStack> metalStack = new ArrayList();
@@ -110,7 +159,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			data.setBoolean("pour", isPouring);
 			data.setFloat("angle", angle); //see below
 			this.networkPack(data, 50);
-		*/} /*else {
+		} /*else {
 			
 			if(isProgressing) {
 				//literal fire particle effects :333333333333333333333
@@ -126,7 +175,7 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 			angle += isPouring ? 1.8F : -1.8F; //1.8 degrees every tick > 50 ticks for full 90 degrees
 		else
 			angle = angle >= maxAngle ? maxAngle : 0;*/
-	}
+	/*}
 	
 	@Override
 	public void networkUnpack(NBTTagCompound data) {
@@ -286,4 +335,4 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		if(data.getBoolean("pour") && !isPouring && !isProgressing)
 			isPouring = true;
 	}
-}
+}*/
