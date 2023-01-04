@@ -94,10 +94,8 @@ public class MapGenNTMFeatures extends MapGenStructure {
 		public Start(World world, Random rand, int chunkX, int chunkZ) {
 			super(chunkX, chunkZ);
 			
-			BiomeGenBase biome = world.getBiomeGenForCoords(chunkX * 16 + 8, chunkZ * 16 + 8);
-			int posY = world.getHeightValue(chunkX * 16 + 8, chunkZ * 16 + 8);
-			if(posY == 0)
-				posY = world.getTopSolidOrLiquidBlock(chunkX * 16 + 8, chunkZ * 16 + 8);
+			BiomeGenBase biome = world.getBiomeGenForCoords(chunkX * 16 + 8, chunkZ * 16 + 8); //Only gets the biome in the corner of the chunk.
+			final int posY = 64; // Terrain *does not exist* at this stage - at least, for vanilla. Here it has to be called after, but better safe than sorry.
 			
 			/*
 			 * Probably want to use nextInt() to increase the structures of rarity here. As a fallback, you could have generic stone brick/useless block ruins that will always be chosen if the

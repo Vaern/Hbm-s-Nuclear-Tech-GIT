@@ -9,6 +9,7 @@ import com.hbm.world.worldgen.components.RuinFeatures;
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
+import net.minecraftforge.common.MinecraftForge;
 
 public class HbmWorld {
 	
@@ -24,7 +25,10 @@ public class HbmWorld {
 		registerNTMFeatures();
 		
 		registerWorldGen(new HbmWorldGen(), 1);
-		registerWorldGen(new NTMWorldGenerator(), 1); //Ideally, move everything over from HbmWorldGen to NTMWorldGenerator
+		
+		NTMWorldGenerator worldGenerator = new NTMWorldGenerator();
+		registerWorldGen(worldGenerator, 1); //Ideally, move everything over from HbmWorldGen to NTMWorldGenerator
+		MinecraftForge.EVENT_BUS.register(worldGenerator);
 		//registerWorldGen(new WorldGenTest(), 1);
 	}
 	
