@@ -1,10 +1,20 @@
 package com.hbm.tileentity.machine;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.hbm.handler.FuelHandler;
 import com.hbm.inventory.container.ContainerBessemer;
 import com.hbm.inventory.gui.GUIBessemer;
+import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.inventory.recipes.CrucibleRecipes.CrucibleRecipe;
+import com.hbm.items.ModItems;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.ItemStackUtil;
 
 import api.hbm.block.ICrucibleAcceptor;
 import cpw.mods.fml.relauncher.Side;
@@ -12,14 +22,25 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IGUIProvider { //, IControlReceiver { //implements IGUIProvider {:3
+public class TileEntityBessemer extends TileEntityMachineBase implements ICrucibleAcceptor, IGUIProvider { //, IControlReceiver {
+	
+	public int maxBurnTime;
+	public int burnTime;
+	public int progress;
+	
+	public List<MaterialStack> recipeStack = new ArrayList();
+	
+	public static int recipeCapacity = MaterialShapes.BLOCK.q(32);
+	public static int processTime = 20_000; //The Bessemer's main benefit is not caring about burn heat; but as a drawback, smelting cannot be sped up.
 	
 	public TileEntityBessemer() {
-		super(11);
+		super(8);
 	}
 	
 	@Override
@@ -32,8 +53,111 @@ public class TileEntityBessemer extends TileEntityMachineBase implements ICrucib
 		
 		if(!worldObj.isRemote) {
 			
+			/* Burn items */
+			if(burnTime <= 0) {
+				
+				if(slots[1] != null) {
+					
+					int fuel = getBurnTime(slots[1]);
+					
+					if(fuel > 0) {
+						this.maxBurnTime = this.burnTime = fuel;
+						slots[1].stackSize--;
+
+						if(slots[1].stackSize == 0) {
+							slots[1] = slots[1].getItem().getContainerItem(slots[1]);
+						}
+					}
+				}
+			}
+			
+			/* Smelt items */
+			if(!trySmelt()) {
+				this.progress = 0;
+			}
+			
+			
+			/* Convert steel */
+			
+			
+			/* Pouring */
+			
+			
+			/* Network Pack */
+			NBTTagCompound data = new NBTTagCompound();
+			int[] rec = new int[recipeStack.size() * 2];
+			for(int i = 0; i < recipeStack.size(); i++) { MaterialStack sta = recipeStack.get(i); rec[i * 2] = sta.material.id; rec[i * 2 + 1] = sta.amount; }
+			data.setIntArray("rec", rec);
+			data.setInteger("maxBurnTime", maxBurnTime);
+			data.setInteger("burnTime", burnTime);
+			data.setInteger("progress", progress);
+			this.networkPack(data, 25);
 		}
 		
+	}
+	
+	@Override
+	public void networkUnpack(NBTTagCompound nbt) {
+
+		this.recipeStack.clear();
+		
+		int[] rec = nbt.getIntArray("rec");
+		for(int i = 0; i < rec.length / 2; i++) {
+			recipeStack.add(new MaterialStack(Mats.matById.get(rec[i * 2]), rec[i * 2 + 1]));
+		}
+		
+		this.maxBurnTime = nbt.getInteger("maxBurnTime");
+		this.burnTime = nbt.getInteger("burnTime");
+		this.progress = nbt.getInteger("progress");
+	}
+	
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+
+		int[] rec = nbt.getIntArray("rec");
+		for(int i = 0; i < rec.length / 2; i++) {
+			recipeStack.add(new MaterialStack(Mats.matById.get(rec[i * 2]), rec[i * 2 + 1]));
+		}
+		
+		this.maxBurnTime = nbt.getInteger("maxBurnTime");
+		this.burnTime = nbt.getInteger("burnTime");
+		this.progress = nbt.getInteger("progress");
+	}
+	
+	@Override
+	public void writeToNBT(NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+		
+		int[] rec = new int[recipeStack.size() * 2];
+		for(int i = 0; i < recipeStack.size(); i++) { MaterialStack sta = recipeStack.get(i); rec[i * 2] = sta.material.id; rec[i * 2 + 1] = sta.amount; }
+		nbt.setIntArray("rec", rec);
+		nbt.setInteger("maxBurnTime", maxBurnTime);
+		nbt.setInteger("burnTime", burnTime);
+		nbt.setInteger("progress", progress);
+	}
+	
+	/* BURNING / SMELTING METHODS */
+	
+	/** Restricts burn options to coal and coke. ModuleBurnTime isn't really meant for this sort of restriction, so I've settled for a hardcoded method. */
+	private int getBurnTime(ItemStack stack) {
+		if(stack == null) return 0;
+		
+		int fuel = FuelHandler.getBurnTimeFromCache(stack);
+		
+		List<String> names = ItemStackUtil.getOreDictNames(stack);
+		
+		for(String name : names) {
+			if(name.contains("Coke"))		return (int)(fuel * 0.75D);
+			if(name.contains("Coal"))		return (int)(fuel * 1.5D);
+		}
+		
+		return 0;
+	}
+	
+	private boolean trySmelt() {
+		
+		return true;
 	}
 	
 	@Override

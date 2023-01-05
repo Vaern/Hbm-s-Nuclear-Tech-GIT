@@ -20,8 +20,8 @@ public class ContainerBessemer extends Container {
 		this.addSlotToContainer(new Slot(bessemer, 1, 78, 59)); //coke
 		
 		for(int i = 0; i < 3; i++) { //smelt slots
-			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new Slot(bessemer, j + i * 3 + 1, 10 + j * 18, 23 + i * 18));
+			for(int j = 0; j < 2; j++) {
+				this.addSlotToContainer(new Slot(bessemer, j + i * 2 + 1, 10 + j * 18, 23 + i * 18));
 			}
 		}
 		
