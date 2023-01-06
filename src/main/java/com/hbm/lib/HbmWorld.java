@@ -1,10 +1,10 @@
 package com.hbm.lib;
 
-import com.hbm.world.worldgen.MapGenNTMFeatures;
-import com.hbm.world.worldgen.NTMWorldGenerator;
-import com.hbm.world.worldgen.components.CivilianFeatures;
-import com.hbm.world.worldgen.components.OfficeFeatures;
-import com.hbm.world.worldgen.components.RuinFeatures;
+import com.hbm.world.gen.MapGenNTMFeatures;
+import com.hbm.world.gen.NTMWorldGenerator;
+import com.hbm.world.gen.component.CivilianFeatures;
+import com.hbm.world.gen.component.OfficeFeatures;
+import com.hbm.world.gen.component.RuinFeatures;
 
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.registry.GameRegistry;

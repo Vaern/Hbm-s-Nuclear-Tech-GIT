@@ -1,11 +1,11 @@
-package com.hbm.world.worldgen.components;
+package com.hbm.world.gen.component;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import com.hbm.world.worldgen.components.ProceduralComponents.ControlComponent;
+import com.hbm.world.gen.component.ProceduralComponents.ControlComponent;
 
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;

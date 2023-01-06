@@ -1,4 +1,4 @@
-package com.hbm.world.worldgen;
+package com.hbm.world.gen;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -7,9 +7,9 @@ import java.util.Random;
 
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.StructureConfig;
-import com.hbm.world.worldgen.components.CivilianFeatures.*;
-import com.hbm.world.worldgen.components.OfficeFeatures.*;
-import com.hbm.world.worldgen.components.RuinFeatures.*;
+import com.hbm.world.gen.component.CivilianFeatures.*;
+import com.hbm.world.gen.component.OfficeFeatures.*;
+import com.hbm.world.gen.component.RuinFeatures.*;
 
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;

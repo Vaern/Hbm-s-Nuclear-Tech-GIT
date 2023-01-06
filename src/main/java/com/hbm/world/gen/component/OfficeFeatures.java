@@ -1,11 +1,11 @@
-package com.hbm.world.worldgen.components;
+package com.hbm.world.gen.component;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.HbmChestContents;
 import com.hbm.util.LootGenerator;
-import com.hbm.world.worldgen.components.Component.ConcreteBricks;
+import com.hbm.world.gen.component.Component.ConcreteBricks;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -203,7 +203,7 @@ public class OfficeFeatures {
 			randomlyFillWithBlocks(world, box, rand, 0.25F, 10, 3, 7, sizeX - 1, 3, sizeZ - 1, Blocks.web);
 			//Doors
 			placeDoor(world, box, ModBlocks.door_office, 3, false, rand.nextBoolean(), 2, 1, 7);
-			placeDoor(world, box, ModBlocks.door_office, 3, false, rand.nextBoolean(), 3, 1, 7);
+			placeDoor(world, box, ModBlocks.door_office, 3, true, rand.nextBoolean(), 3, 1, 7);
 			placeDoor(world, box, ModBlocks.door_office, 0, false, rand.nextBoolean(), 5, 1, 6);
 			
 			//Woot

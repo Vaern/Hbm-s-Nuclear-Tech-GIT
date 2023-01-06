@@ -5,12 +5,10 @@ import java.util.Random;
 import com.hbm.blocks.BlockEnums.EnumStoneType;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockMotherOfAllOres;
-import com.hbm.blocks.generic.BlockNTMFlower.EnumFlowerType;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.WorldConfig;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
-import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.machine.storage.TileEntitySafe;
 import com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule;
 import com.hbm.world.dungeon.AncientTomb;
@@ -40,6 +38,7 @@ import com.hbm.world.feature.Sellafield;
 import com.hbm.world.generator.CellularDungeonFactory;
 import com.hbm.world.generator.DungeonToolbox;
 
+import cpw.mods.fml.common.IWorldGenerator;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -48,13 +47,8 @@ import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.biome.BiomeGenBeach;
-import net.minecraft.world.biome.BiomeGenForest;
-import net.minecraft.world.biome.BiomeGenJungle;
-import net.minecraft.world.biome.BiomeGenRiver;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.feature.WorldGenMinable;
-import cpw.mods.fml.common.IWorldGenerator;
 
 public class HbmWorldGen implements IWorldGenerator {
 
@@ -76,28 +70,6 @@ public class HbmWorldGen implements IWorldGenerator {
 	private void generateSurface(World world, Random rand, int i, int j) {
 
 		BiomeGenBase biome = world.getWorldChunkManager().getBiomeGenAt(i, j);
-
-		if(!TomSaveData.forWorld(world).impact) {
-			
-			if(biome instanceof BiomeGenForest && rand.nextInt(16) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.plant_flower, EnumFlowerType.FOXGLOVE.ordinal());
-			}
-			if(biome == BiomeGenBase.roofedForest && rand.nextInt(8) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.plant_flower, EnumFlowerType.NIGHTSHADE.ordinal());
-			}
-			if(biome instanceof BiomeGenJungle && rand.nextInt(8) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.plant_flower, EnumFlowerType.TOBACCO.ordinal());
-			}
-			if(rand.nextInt(64) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.plant_flower, EnumFlowerType.WEED.ordinal());
-			}
-			if(biome instanceof BiomeGenRiver && rand.nextInt(4) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.reeds, 0);
-			}
-			if(biome instanceof BiomeGenBeach && rand.nextInt(8) == 0) {
-				DungeonToolbox.generateFlowers(world, rand, i, j, ModBlocks.reeds, 0);
-			}
-		}
 		
 		if(WorldConfig.oilcoalSpawn > 0 && rand.nextInt(WorldConfig.oilcoalSpawn) == 0)
 			DungeonToolbox.generateOre(world, rand, i, j, 1, 64, 32, 32, ModBlocks.ore_coal_oil);

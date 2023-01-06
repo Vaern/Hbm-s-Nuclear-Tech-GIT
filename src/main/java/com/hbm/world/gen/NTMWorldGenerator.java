@@ -1,18 +1,24 @@
-package com.hbm.world.worldgen;
+package com.hbm.world.gen;
 
 import java.util.Random;
 
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockNTMFlower.EnumFlowerType;
 import com.hbm.config.StructureConfig;
+import com.hbm.world.gen.feature.WorldGenPlants;
 
 import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
+import static net.minecraftforge.common.BiomeDictionary.*;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
 import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
+import static net.minecraftforge.event.terraingen.TerrainGen.*;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.event.terraingen.TerrainGen;
 
 public class NTMWorldGenerator implements IWorldGenerator {
 	
@@ -23,7 +29,7 @@ public class NTMWorldGenerator implements IWorldGenerator {
 	/** Inits all MapGen upon the loading of a new world. Hopefully clears out structureMaps and structureData when a different world is loaded. */
 	@SubscribeEvent
 	public void onLoad(WorldEvent.Load event) {
-		scatteredFeatureGenerator = (MapGenNTMFeatures) TerrainGen.getModdedMapGen(new MapGenNTMFeatures(), EventType.CUSTOM);
+		scatteredFeatureGenerator = (MapGenNTMFeatures) getModdedMapGen(new MapGenNTMFeatures(), EventType.CUSTOM);
 		hasPopulationEvent = false;
 	}
 	
@@ -79,7 +85,7 @@ public class NTMWorldGenerator implements IWorldGenerator {
 		case -1:
 			generateNether(world, rand, chunkGenerator, chunkX, chunkZ); break;
 		case 0:
-			generateSurface(world, rand, chunkGenerator, chunkX, chunkZ); break;
+			generateSurface(world, rand, chunkGenerator, chunkProvider, chunkX, chunkZ); break;
 		case 1:
 			generateEnd(world, rand, chunkGenerator, chunkX, chunkZ); break;
 		}
@@ -87,15 +93,50 @@ public class NTMWorldGenerator implements IWorldGenerator {
 	
 	private void generateNether(World world, Random rand, IChunkProvider chunkGenerator, int chunkX, int chunkZ) { }
 	
-	private void generateSurface(World world, Random rand, IChunkProvider chunkGenerator, int chunkX, int chunkZ) { //TODO fiix this 
+	private void generateSurface(World world, Random rand, IChunkProvider chunkGenerator, IChunkProvider chunkProvider, int chunkX, int chunkZ) {
 		if(!hasPopulationEvent) { //If we've failed to generate any structures (flatlands)
 			setRandomSeed(world, chunkX, chunkZ); //Reset the random seed to compensate
 			if(StructureConfig.enableStructures) generateOverworldStructures(world, chunkGenerator, chunkX, chunkZ); //Do it through the post-population generation directly
 		}
 		
+		final int posX = (chunkX << 4) + 8;
+		final int posZ = (chunkZ << 4) + 8;
+		BiomeGenBase biome = world.getBiomeGenForCoords(posX, posZ);
+		
+		/* biome dictionary my beloved <3 
+		 * no check for tom here because the event handler already checks for decoration events, + this way they won't become permanently extinct.
+		 */
+		
+		/* Biome check, followed by chance, followed by event (for compat, both intra- and inter- (in the case of Tom). */
+		if(areBiomesEquivalent(biome, BiomeGenBase.forest) && rand.nextInt(16) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS))
+			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.FOXGLOVE.ordinal()).locateAndGenerate(world, rand, posX, posZ);
+		
+		if(isBiomeOfTypes(biome, Type.SPOOKY, Type.DENSE) && rand.nextInt(8) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS))
+			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.NIGHTSHADE.ordinal()).locateAndGenerate(world, rand, posX, posZ);
+		
+		if(isBiomeOfType(biome, Type.JUNGLE) && rand.nextInt(8) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS))
+			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.TOBACCO.ordinal()).locateAndGenerate(world, rand, posX, posZ);
+		
+		if(!isBiomeOfType(biome, Type.COLD) && rand.nextInt(64) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS)) {
+			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.WEED.ordinal()).locateAndGenerate(world, rand, posX, posZ);
+		}
+		
+		if(isBiomeOfType(biome, Type.RIVER) && rand.nextInt(4) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.LILYPAD)) //sadly there's no generic 'plant' type
+			new WorldGenPlants(ModBlocks.reeds).locateAndGenerate(world, rand, posX, posZ);
 		
 		
 	}
 
 	private void generateEnd(World world, Random rand, IChunkProvider chunkGenerator, int chunkX, int chunkZ) { }
+	
+	/** Utility method for biome checking multiple types exclusively. Not sure why it wasn't already present. */
+	public static boolean isBiomeOfTypes(BiomeGenBase biome, Type... types) { //If new biomes are implemented, move this to any biome-related utility class.
+		for(Type type : types) {
+			final boolean flag = isBiomeOfType(biome, type);
+			
+			if(!flag) return false;
+		}
+		
+		return true;
+	}
 }
