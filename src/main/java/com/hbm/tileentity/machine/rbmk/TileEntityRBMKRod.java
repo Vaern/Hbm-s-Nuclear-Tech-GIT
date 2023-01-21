@@ -273,6 +273,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	@Override
 	public void onMelt(int reduce) {
 
+		boolean moderated = this.isModerated();
 		int h = RBMKDials.getColumnHeight(worldObj);
 		reduce = MathHelper.clamp_int(reduce, 1, h);
 		
@@ -305,6 +306,15 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			}
 		} else {
 			this.standardMelt(reduce);
+		}
+		
+		if(moderated) {
+			
+			int count = 2 + worldObj.rand.nextInt(2);
+			
+			for(int i = 0; i < count; i++) {
+				spawnDebris(DebrisType.GRAPHITE);
+			}
 		}
 		
 		spawnDebris(DebrisType.ELEMENT);
