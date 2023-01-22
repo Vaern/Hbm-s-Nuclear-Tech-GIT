@@ -4,6 +4,7 @@ import com.hbm.world.gen.MapGenNTMFeatures;
 import com.hbm.world.gen.NTMWorldGenerator;
 import com.hbm.world.gen.component.CivilianFeatures;
 import com.hbm.world.gen.component.OfficeFeatures;
+import com.hbm.world.gen.component.RelicComponents;
 import com.hbm.world.gen.component.RuinFeatures;
 
 import cpw.mods.fml.common.IWorldGenerator;
@@ -41,5 +42,6 @@ public class HbmWorld {
 		CivilianFeatures.registerComponents();
 		OfficeFeatures.registerComponents();
 		RuinFeatures.registerComponents();
+		RelicComponents.registerComponents();
 	}
 }

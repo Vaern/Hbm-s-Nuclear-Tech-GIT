@@ -343,6 +343,7 @@ public class ModBlocks {
 	public static Block brick_asbestos;
 	public static Block brick_fire;
 	public static Block brick_relic;
+	public static Block brick_relic_nameplate;
 
 	public static Block concrete_slab;
 	public static Block concrete_double_slab;
@@ -1618,6 +1619,7 @@ public class ModBlocks {
 		brick_asbestos = new BlockOutgas(Material.rock, true, 5, true).setBlockName("brick_asbestos").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(1000.0F).setBlockTextureName(RefStrings.MODID + ":brick_asbestos");
 		brick_fire = new BlockGeneric(Material.rock).setBlockName("brick_fire").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(160.0F).setBlockTextureName(RefStrings.MODID + ":brick_fire");
 		brick_relic = new BlockGeneric(Material.rock).setBlockName("brick_relic").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(7000.0F).setBlockTextureName(RefStrings.MODID + ":brick_relic");
+		brick_relic_nameplate = new BlockNameplate(Material.rock).setBlockName("brick_relic_nameplate").setHardness(5.0F).setResistance(7000.0F).setBlockTextureName(RefStrings.MODID + "brick_relic");
 		
 		ducrete_smooth = new BlockGeneric(Material.rock).setBlockName("ducrete_smooth").setCreativeTab(MainRegistry.blockTab).setHardness(20.0F).setResistance(8000.0F).setBlockTextureName(RefStrings.MODID + ":ducrete");
 		ducrete = new BlockGeneric(Material.rock).setBlockName("ducrete").setCreativeTab(MainRegistry.blockTab).setHardness(20.0F).setResistance(8000.0F).setBlockTextureName(RefStrings.MODID + ":ducrete_tile");
@@ -2744,6 +2746,7 @@ public class ModBlocks {
 		GameRegistry.registerBlock(brick_asbestos, brick_asbestos.getUnlocalizedName());
 		GameRegistry.registerBlock(brick_fire, ItemBlockBlastInfo.class, brick_fire.getUnlocalizedName());
 		GameRegistry.registerBlock(brick_relic, ItemBlockBlastInfo.class, brick_relic.getUnlocalizedName());
+		GameRegistry.registerBlock(brick_relic_nameplate, ItemBlockBase.class, brick_relic_nameplate.getUnlocalizedName());
 		
 		GameRegistry.registerBlock(concrete_slab, ItemModSlab.class, concrete_slab.getUnlocalizedName());
 		GameRegistry.registerBlock(concrete_double_slab, ItemModSlab.class, concrete_double_slab.getUnlocalizedName());

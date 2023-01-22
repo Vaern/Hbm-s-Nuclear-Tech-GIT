@@ -7,13 +7,10 @@ import java.util.Random;
 
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.StructureConfig;
-import com.hbm.world.gen.component.CivilianFeatures.*;
-import com.hbm.world.gen.component.OfficeFeatures.*;
-import com.hbm.world.gen.component.RuinFeatures.*;
+import com.hbm.world.gen.component.RelicComponents.RelicOutpost;
 
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.biome.BiomeGenMesa;
 import net.minecraft.world.gen.structure.MapGenStructure;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.gen.structure.StructureComponent;
@@ -103,7 +100,10 @@ public class MapGenNTMFeatures extends MapGenStructure {
 			 * Rainfall & Temperature Check
 			 */
 			//TODO: Do something about this so it's nice-looking and easily readable. Plus, test compatibility against mods like BoP
-			if(rand.nextInt(3) == 0) { //Empty Ruin Structures
+			RelicOutpost outpost = new RelicOutpost(rand, chunkX * 16 + 8, chunkZ * 16 + 8);
+			this.components.add(outpost);
+			
+			/*if(rand.nextInt(3) == 0) { //Empty Ruin Structures
 				switch(rand.nextInt(4)) {
 				case 0:
 					NTMRuin1 ruin1 = new NTMRuin1(rand, chunkX * 16 + 8, posY, chunkZ * 16 + 8);
@@ -149,7 +149,7 @@ public class MapGenNTMFeatures extends MapGenStructure {
 					LargeOfficeCorner officeCorner = new LargeOfficeCorner(rand, chunkX * 16 + 8, posY, chunkZ * 16 + 8);
 					this.components.add(officeCorner); break;
 				}
-			}
+			}*/
 			
 			if(GeneralConfig.enableDebugMode) {
 				System.out.print("[Debug] StructureStart at " + (chunkX * 16 + 8) + ", " + posY + ", " + (chunkZ * 16 + 8) + "\n[Debug] Components: ");
