@@ -78,6 +78,10 @@ public class ItemArmorMod extends Item {
 	
 	public Multimap getModifiers(ItemStack armor) { return null; }
 	
+	public boolean isModApplicable(int armor, int slot, ItemStack mod) {
+		return (type == 0 && helmet) || (type == 1 && chestplate) || (type == 2 && leggings) || (type == 3 && boots);
+	}
+	
 	@SideOnly(Side.CLIENT)
 	public void modRender(RenderPlayerEvent.SetArmorModel event, ItemStack armor) { }
 }

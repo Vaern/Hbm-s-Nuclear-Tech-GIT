@@ -70,7 +70,7 @@ public class ContainerArmorTable extends Container {
 					ItemStack mod = upgrades.getStackInSlot(i);
 					
 					//ideally, this should always return true so long as the mod slot is not null due to the insert restriction
-					if(ArmorModHandler.isApplicable(stack, mod)) {
+					if(ArmorModHandler.isApplicable(stack, i, mod)) {
 						upgrades.setInventorySlotContents(i, null);
 					}
 				}
@@ -194,7 +194,7 @@ public class ContainerArmorTable extends Container {
 
 		@Override
 		public boolean isItemValid(ItemStack stack) {
-			return armor.getStackInSlot(0) != null && ArmorModHandler.isApplicable(armor.getStackInSlot(0), stack) && ((ItemArmorMod)stack.getItem()).type == this.slotNumber;
+			return armor.getStackInSlot(0) != null && ArmorModHandler.isApplicable(armor.getStackInSlot(0), this.slotNumber, stack);
 		}
 		
 		@Override
@@ -202,7 +202,7 @@ public class ContainerArmorTable extends Container {
 			super.putStack(stack);
 			
 			if(stack != null) {
-				if(ArmorModHandler.isApplicable(armor.getStackInSlot(0), stack))
+				if(ArmorModHandler.isApplicable(armor.getStackInSlot(0), this.slotNumber, stack))
 					ArmorModHandler.applyMod(armor.getStackInSlot(0), stack);
 			}
 		}

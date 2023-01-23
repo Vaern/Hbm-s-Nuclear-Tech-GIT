@@ -45,7 +45,7 @@ public class ArmorModHandler {
 	 * @param mod
 	 * @return
 	 */
-	public static boolean isApplicable(ItemStack armor, ItemStack mod) {
+	public static boolean isApplicable(ItemStack armor, int slot, ItemStack mod) {
 		
 		if(armor == null || mod == null)
 			return false;
@@ -60,7 +60,7 @@ public class ArmorModHandler {
 		
 		ItemArmorMod aMod = (ItemArmorMod)mod.getItem();
 		
-		return (type == 0 && aMod.helmet) || (type == 1 && aMod.chestplate) || (type == 2 && aMod.leggings) || (type == 3 && aMod.boots);
+		return aMod.isModApplicable(type, slot, mod);
 	}
 	
 	/**

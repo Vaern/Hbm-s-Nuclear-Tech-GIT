@@ -103,7 +103,7 @@ public class GUIArmorTable extends GuiInfoContainer {
 		if(mod == null)
 			return;
 
-		if(ArmorModHandler.isApplicable(armor, mod)) {
+		if(ArmorModHandler.isApplicable(armor, index, mod)) {
 			this.drawTexturedModalRect(guiLeft + x, guiTop + y, 176, 34, 18, 18);
 		} else {
 			this.drawTexturedModalRect(guiLeft + x, guiTop + y, 176, 16, 18, 18);
