@@ -6,6 +6,7 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockBobble.TileEntityBobble;
+import com.hbm.blocks.generic.BlockNameplate.TileEntityNameplate;
 import com.hbm.config.StructureConfig;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.items.ModItems;
@@ -408,6 +409,177 @@ abstract public class Component extends StructureComponent {
 			bobble.type = BobbleType.values()[rand.nextInt(BobbleType.values().length - 1) + 1];
 			bobble.markDirty();
 		}
+	}
+	
+	/**
+	 * Creates relic nameplate using the french town name generator, a seed for generation, and the localization key.<br>
+	 * 0: Down, 1: Up, 2: N, 3: S, 4: W, 5: E
+	 */
+	protected void placeRelicNameplate(World world, StructureBoundingBox box, int meta, int featureX, int featureY, int featureZ, String key, long seed) {
+		int posX = this.getXWithOffset(featureX, featureZ);
+		int posY = this.getYWithOffset(featureY);
+		int posZ = this.getZWithOffset(featureX, featureZ);
+		
+		if(box.isVecInside(posX, posY, posZ)) {
+			if(meta > 1) {
+				ForgeDirection dir = ForgeDirection.getOrientation(meta); 
+				switch(coordBaseMode) {
+				default: //S
+					break;
+				case 1: //W
+					dir = dir.getRotation(ForgeDirection.UP); break;
+				case 2: //N
+					dir = dir.getOpposite(); break;
+				case 3: //E
+					dir = dir.getRotation(ForgeDirection.DOWN); break;
+				}
+				
+				meta = dir.ordinal();
+			}
+			
+			world.setBlock(posX, posY, posZ, ModBlocks.brick_relic_nameplate, meta, 2);
+			TileEntity te = world.getTileEntity(posX, posY, posZ);
+			
+			if(!(te instanceof TileEntityNameplate))
+				return;
+			
+			TileEntityNameplate plate = (TileEntityNameplate) te;
+			plate.setTitle(key, generateFrenchTownName(seed));
+		}
+	}
+	
+	//might *really* need a lore class
+	//I don't know how it would be organized though
+	
+	final static private String[] french_a1 = {"A",
+		"B",
+		"C",
+		"Ch",
+		"Cl",
+		"D",
+		"M",
+		"N",
+		"P",
+		"Pr",
+		"R",
+		"S",
+		"V"};
+	
+	final static private String[] french_a2 = {"a",
+		"â",
+		"au",
+		"e",
+		"é",
+		"è",
+		"eau",
+		"eu",
+		"i",
+		"î",
+		"ie",
+		"io",
+		"o",
+		"ô",
+		"oi",
+		"ou",
+		"u",
+		"ue"};
+	
+	final static private String[] french_b1 = {"b",
+		"ch",
+		"d",
+		"l",
+		"ll",
+		"n",
+		"nc",
+		"nd",
+		"nn",
+		"nt",
+		"m",
+		"r",
+		"rn",
+		"rs",
+		"s",
+		"sn",
+		"th"};
+	
+	final static private String[] french_b2 = {"er",
+		"ier",
+		"de",
+		"elle",
+		"ette",
+		"dier",
+		"ièvre",
+		"ière",
+		"aire",
+		"aix",
+		"anches",
+		"and",
+		"ard",
+		"au",
+		"aux",
+		"eaux",
+		"elle",
+		"erre",
+		"eulles",
+		"eux",
+		"oise",
+		"onne",
+		"ont",
+		"ord",
+		"ouge",
+		"ouse",
+		"oux",
+		"usson"};
+	
+	final static private String[] french_c1 = {"m",
+		"ms",
+		"n",
+		"ne",
+		"nnes",
+		"ns",
+		"rs",
+		"rtres"};
+	
+	final static private String[] french_con = {"-",
+		"-en-",
+		"-et-",
+		"-sur-",
+		"-sur-",
+		"-sous-"};
+	
+	private static int seedMod(long seed, int shift, int range) {
+		return Math.abs((int) ((seed >> shift) % range));
+	}
+	
+	/**
+	 * The fun begins :3<br>Generates a french-sounding town name based on the given input seed
+	 */
+	protected static String generateFrenchTownName(long seed) {
+		String name = "";
+		
+		name += french_a1[seedMod(seed, 0, french_a1.length)]; //Starting letter
+		name += french_a2[seedMod(seed, 10, french_a2.length)]; //Starting sound
+		
+		if((seed >> 2) % 3 > 0) {
+			name += french_b1[seedMod(seed, 16, french_b1.length)]; //Consonant
+			name += french_b2[seedMod(seed, 24, french_b2.length)]; //Ending
+		} else
+			name += french_c1[seedMod(seed, 20, french_c1.length)]; //Ending
+		
+		if((seed >> 32) % 3 > 0) { //2/3 chance of suffix
+			name += french_con[seedMod(seed, 33, french_con.length)]; //Conjugate
+			
+			name += french_a1[seedMod(seed, 36, french_a1.length)]; //Starting letter
+			name += french_a2[seedMod(seed, 42, french_a2.length)]; //Starting sound
+			
+			if((seed >> 2) % 3 > 0) {
+				name += french_b1[seedMod(seed, 48, french_b1.length)]; //Consonant
+				name += french_b2[seedMod(seed, 56, french_b2.length)]; //Ending
+			} else
+				name += french_c1[seedMod(seed, 54, french_c1.length)]; //Consonant
+		}
+		
+		return name;
 	}
 	
 	/** Block Placement Utility Methods **/

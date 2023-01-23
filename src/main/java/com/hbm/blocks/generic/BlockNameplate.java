@@ -2,28 +2,26 @@ package com.hbm.blocks.generic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
+import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.util.I18nUtil;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
@@ -47,8 +45,8 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerBlockIcons(IIconRegister iconRegister) {
-		super.registerBlockIcons(iconRegister);
-		this.iconPlate = iconRegister.registerIcon(getTextureName() + "_plate");
+		this.blockIcon = iconRegister.registerIcon(this.getTextureName());
+		this.iconPlate = iconRegister.registerIcon(this.getTextureName() + "_plate");
 	}
 	
 	@Override
@@ -64,59 +62,29 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 	
 	@Override
 	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase player, ItemStack stack) {
-		
-		TileEntity te = world.getTileEntity(x, y, z);
-		
-		/* remove this later*/
-		if(!(te instanceof TileEntityNameplate))
-			return;
-		
-		TileEntityNameplate hah = (TileEntityNameplate) te;
-		hah.title = "lol,";
-		hah.desc = "lmao";
-		/* */
-		/*if(!(te instanceof TileEntityNameplate && stack.hasTagCompound()))
-			return;
-		
-		TileEntityNameplate plate = (TileEntityNameplate) te;
-		NBTTagCompound nbt = stack.stackTagCompound;
-		
-		plate.titleI18n = nbt.getString("titleI18n");
-		plate.title = nbt.getString("title");
-		plate.descI18n = nbt.getString("descI18n");
-		plate.desc = nbt.getString("desc");*/
+		IPersistentNBT.restoreData(world, x, y, z, stack);
+		world.markBlockForUpdate(x, y, z);
 	}
 	
 	@Override
-	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
+	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
+		return IPersistentNBT.getDrops(world, x, y, z, this);
+	}
+	
+	@Override
+	public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
 		
-		if(!player.capabilities.isCreativeMode && !world.isRemote && willHarvest) {
-			TileEntity te = world.getTileEntity(x, y, z);
-			
-			ItemStack stack = new ItemStack(Item.getItemFromBlock(this));
-			
-			if(te instanceof TileEntityNameplate) {
-				TileEntityNameplate plate = (TileEntityNameplate) te;
-				NBTTagCompound nbt = new NBTTagCompound();
-				//TODO: figure out why the strings are always empty when harvested
-				/* remember kids, the nbt methods save coords and id! you don't want that interfering */
-				if(plate.titleI18n != null) nbt.setString("titleI18n", plate.titleI18n);
-				if(plate.title != null) nbt.setString("title", plate.title);
-				if(plate.descI18n != null) nbt.setString("descI18n", plate.descI18n);
-				if(plate.desc != null) nbt.setString("desc", plate.desc);
-				
-				stack.stackTagCompound = nbt;
-			}
-			
-			world.spawnEntityInWorld(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, stack));
+		if(!player.capabilities.isCreativeMode) {
+			harvesters.set(player);
+			this.dropBlockAsItem(world, x, y, z, meta, 0);
+			harvesters.set(null);
 		}
-		
-		return world.setBlockToAir(x, y, z);
 	}
 	
 	@Override
-	public Item getItemDropped(int i, Random rand, int j) {
-		return null;
+	public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {
+		player.addStat(StatList.mineBlockStatArray[getIdFromBlock(this)], 1);
+		player.addExhaustion(0.025F);
 	}
 	
 	@Override
@@ -127,12 +95,12 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 		if(!(te instanceof TileEntityNameplate))
 			return;
 		
-		if(Minecraft.getMinecraft().objectMouseOver.sideHit != te.blockMetadata)
+		if(Minecraft.getMinecraft().objectMouseOver.sideHit != te.getBlockMetadata())
 			return;
 		
 		TileEntityNameplate plate = (TileEntityNameplate) te;
 		
-		String title = plate.descI18n.isEmpty() ? plate.title : I18nUtil.resolveKey(plate.titleI18n, plate.title);
+		String title = plate.titleI18n.isEmpty() ? plate.title : I18nUtil.resolveKey(plate.titleI18n, plate.title);
 		List<String> text = new ArrayList();
 		
 		if(!plate.descI18n.isEmpty())
@@ -148,14 +116,14 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 		if(!stack.hasTagCompound())
 			return;
 		
-		NBTTagCompound nbt = stack.stackTagCompound;
+		NBTTagCompound nbt = stack.stackTagCompound.getCompoundTag(IPersistentNBT.NBT_PERSISTENT_KEY);
 		
 		final String titleI18n = nbt.getString("titleI18n");
 		final String title = nbt.getString("title");
 		
 		if(!titleI18n.isEmpty())
 			list.add(EnumChatFormatting.YELLOW + I18nUtil.resolveKey(titleI18n, title));
-		else
+		else if(!title.isEmpty())
 			list.add(EnumChatFormatting.YELLOW + title);
 		
 		final String descI18n = nbt.getString("descI18n");
@@ -163,25 +131,25 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 		
 		if(!descI18n.isEmpty())
 			for(String s : I18nUtil.resolveKeyArray(descI18n, desc)) list.add(s);
-		else
+		else if(!desc.isEmpty())
 			for(String s : desc.split("\\$")) list.add(s);
 	}
 	
-	public static class TileEntityNameplate extends TileEntity {
+	public static class TileEntityNameplate extends TileEntity implements IPersistentNBT {
 		
 		public String titleI18n = "";
 		public String title = "";
 		public String descI18n = "";
 		public String desc = "";
 		
-		public TileEntityNameplate setLocalization(String keyTitle, String keyDesc) {
+		public TileEntityNameplate setTitle(String keyTitle, String title) {
 			this.titleI18n = keyTitle != null ? keyTitle : "";
-			this.descI18n = keyDesc != null ? keyDesc : "";
+			this.title = title != null ? title : "";
 			return this;
 		}
 		
-		public TileEntityNameplate setCustomStrings(String title, String desc) {
-			this.title = title != null ? title : "";
+		public TileEntityNameplate setDesc(String keyDesc, String desc) {
+			this.descI18n = keyDesc != null ? keyDesc : "";
 			this.desc = desc != null ? desc : "";
 			return this;
 		}
@@ -195,20 +163,20 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 		public void readFromNBT(NBTTagCompound nbt) {
 			super.readFromNBT(nbt);
 			
-			if(titleI18n != null) nbt.setString("titleI18n", titleI18n);
-			if(title != null) nbt.setString("title", title);
-			if(descI18n != null) nbt.setString("descI18n", descI18n);
-			if(desc != null) nbt.setString("desc", desc);
+			this.titleI18n = nbt.getString("titleI18n");
+			this.title = nbt.getString("title");
+			this.descI18n = nbt.getString("descI18n");
+			this.desc = nbt.getString("desc");
 		}
 		
 		@Override
 		public void writeToNBT(NBTTagCompound nbt) {
 			super.writeToNBT(nbt);
 			
-			this.titleI18n = nbt.getString("titleI18n");
-			this.title = nbt.getString("title");
-			this.descI18n = nbt.getString("descI18n");
-			this.desc = nbt.getString("desc");
+			if(titleI18n != null) nbt.setString("titleI18n", titleI18n);
+			if(title != null) nbt.setString("title", title);
+			if(descI18n != null) nbt.setString("descI18n", descI18n);
+			if(desc != null) nbt.setString("desc", desc);
 		}
 		
 		@Override
@@ -221,6 +189,26 @@ public class BlockNameplate extends BlockContainer implements ILookOverlay, IToo
 		@Override
 		public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
 			this.readFromNBT(pkt.func_148857_g());
+		}
+
+		@Override
+		public void writeNBT(NBTTagCompound nbt) {
+			NBTTagCompound data = new NBTTagCompound();
+			if(titleI18n != null) data.setString("titleI18n", titleI18n);
+			if(title != null) data.setString("title", title);
+			if(descI18n != null) data.setString("descI18n", descI18n);
+			if(desc != null) data.setString("desc", desc);
+			
+			nbt.setTag(NBT_PERSISTENT_KEY, data);
+		}
+
+		@Override
+		public void readNBT(NBTTagCompound nbt) {
+			NBTTagCompound data = nbt.getCompoundTag(NBT_PERSISTENT_KEY);
+			this.titleI18n = data.getString("titleI18n");
+			this.title = data.getString("title");
+			this.descI18n = data.getString("descI18n");
+			this.desc = data.getString("desc");
 		}
 	}
 }

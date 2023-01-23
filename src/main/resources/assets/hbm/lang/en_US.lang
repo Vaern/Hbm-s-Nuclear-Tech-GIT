@@ -3687,6 +3687,12 @@ itemGroup.tabTemplate=NTM Templates
 itemGroup.tabTest=Nuclear Tech Mod Test Tab
 itemGroup.tabWeapon=NTM Weapons and Turrets
 
+nameplate.relic_outpost.title=Avant-poste de %s
+nameplate.relic_fort.title=Forteresse de %s
+nameplate.relic_castle.title=Chateau de %s
+nameplate.relic_tower.title=Tour de %s
+nameplate.relic_prison.title=Prison de %s
+
 potion.hbm_bang=! ! !
 potion.hbm_death=Heavy Mutation
 potion.hbm_lead=Lead Poisoning
@@ -3947,6 +3953,7 @@ tile.brick_light_stairs.name=Light Bricks Stairs
 tile.brick_obsidian.name=Obsidian Bricks
 tile.brick_obsidian_stairs.name=Obsidian Brick Stairs
 tile.brick_relic.name=Relic Bricks
+tile.brick_relic_nameplate.name=Relic Brick Nameplate
 tile.brick_relic_stairs.name=Relic Brick Stairs
 tile.brick_slab.brick_asbestos.name=Asbestos Brick Slab
 tile.brick_slab.brick_compound.name=Compound Mesh Slab

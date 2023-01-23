@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
@@ -17,12 +18,28 @@ public class RelicComponents {
 	
 	public static class RelicOutpost extends Component {
 		
+		long seed;
+		
 		public RelicOutpost() {
 			super(0);
 		}
 		
 		public RelicOutpost(Random rand, int minX, int minZ) {
 			super(rand, minX, 64, minZ, 12, 15, 14);
+			
+			this.seed = rand.nextLong();
+		}
+		
+		/** Set to NBT */
+		protected void func_143012_a(NBTTagCompound nbt) {
+			nbt.setInteger("HPos", this.hpos);
+			nbt.setLong("seed", seed);
+		}
+		
+		/** Get from NBT */
+		protected void func_143011_b(NBTTagCompound nbt) {
+			this.hpos = nbt.getInteger("HPos");
+			this.seed = nbt.getLong("seed");
 		}
 		
 		@Override
@@ -215,13 +232,33 @@ public class RelicComponents {
 			fillWithBlocks(world, box, 2, 13, 2, 3, 13, 2, ModBlocks.brick_relic);
 			fillWithBlocks(world, box, 2, 13, 3, 4, 13, 4, ModBlocks.brick_relic);
 			
+			//Foundation
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 1, 1, 5, 5, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 6, 3, 11, 5, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 3, 6, 11, 13, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 12, 7, 12, 9, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 12, 3, 12, 3, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 11, 2, 11, 2, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 6, 1, 6, 1, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 5, 0, 5, 0, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 1, 0, 1, 0, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 0, 1, 0, 1, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 0, 5, 0, 5, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 1, 6, 1, 6, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 2, 13, 2, 13, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 3, 14, 3, 14, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 11, 14, 11, 14, -1, box);
+			placeFoundationUnderneath(world, ModBlocks.brick_relic, 0, 12, 13, 12, 13, -1, box);
+			
 			//Finally, deco
 			//Doors
 			placeDoor(world, box, ModBlocks.door_bunker, 2, false, false, 11, 1, 8);
 			placeDoor(world, box, ModBlocks.door_bunker, 3, false, false, 4, 5, 5);
 			//Ladder
 			//TODO ladder meta method
-			
+			//Nameplates
+			placeRelicNameplate(world, box, 5, 12, 2, 7, "nameplate.relic_outpost.title", seed);
+			placeRelicNameplate(world, box, 5, 12, 2, 9, "nameplate.relic_outpost.title", seed);
 			
 			return true;
 		}
