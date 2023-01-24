@@ -79,7 +79,7 @@ public class ItemArmorMod extends Item {
 	public Multimap getModifiers(ItemStack armor) { return null; }
 	
 	public boolean isModApplicable(int armor, int slot, ItemStack mod) {
-		return (type == 0 && helmet) || (type == 1 && chestplate) || (type == 2 && leggings) || (type == 3 && boots);
+		return ((armor == 0 && helmet) || (armor == 1 && chestplate) || (armor == 2 && leggings) || (armor == 3 && boots)) && type == slot;
 	}
 	
 	@SideOnly(Side.CLIENT)
