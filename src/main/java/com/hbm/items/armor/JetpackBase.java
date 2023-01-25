@@ -56,7 +56,7 @@ public abstract class JetpackBase extends ItemArmorMod implements IFillableItem 
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(!(entity instanceof EntityPlayer))
 			return;

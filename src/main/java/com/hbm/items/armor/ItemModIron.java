@@ -31,7 +31,7 @@ public class ItemModIron extends ItemArmorMod {
 	}
 	
 	@Override
-	public Multimap getModifiers(ItemStack armor) {
+	public Multimap getModifiers(ItemStack armor, ItemStack mod) {
 		Multimap multimap = super.getAttributeModifiers(armor);
 		
 		multimap.put(SharedMonsterAttributes.knockbackResistance.getAttributeUnlocalizedName(),

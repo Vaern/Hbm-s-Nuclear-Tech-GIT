@@ -77,7 +77,7 @@ public class ItemModInsert extends ItemArmorMod {
 	}
 
 	@Override
-	public void modDamage(LivingHurtEvent event, ItemStack armor) {
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) {
 		
 		event.ammount *= damageMod;
 		
@@ -106,7 +106,7 @@ public class ItemModInsert extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(!entity.worldObj.isRemote && this == ModItems.insert_polonium) {
 			HbmLivingProps.incrementRadiation(entity, 100F);
@@ -114,7 +114,7 @@ public class ItemModInsert extends ItemArmorMod {
 	}
 	
 	@Override
-	public Multimap getModifiers(ItemStack armor) {
+	public Multimap getModifiers(ItemStack armor, ItemStack mod) {
 		
 		if(speed == 1)
 			return null;

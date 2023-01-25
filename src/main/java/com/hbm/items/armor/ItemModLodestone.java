@@ -35,7 +35,7 @@ public class ItemModLodestone extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		List<EntityItem> items = entity.worldObj.getEntitiesWithinAABB(EntityItem.class, entity.boundingBox.expand(range, range, range));
 		

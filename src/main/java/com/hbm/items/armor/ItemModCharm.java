@@ -41,7 +41,7 @@ public class ItemModCharm extends ItemArmorMod {
 	}
 
 	@Override
-	public void modDamage(LivingHurtEvent event, ItemStack armor) {
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) {
 		
 		if(event.source == ModDamageSource.broadcast) {
 			

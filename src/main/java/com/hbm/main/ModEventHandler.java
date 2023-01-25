@@ -485,7 +485,7 @@ public class ModEventHandler {
 						
 						if(mod != null && mod.getItem() instanceof ItemArmorMod) {
 							
-							Multimap map = ((ItemArmorMod)mod.getItem()).getModifiers(prev);
+							Multimap map = ((ItemArmorMod)mod.getItem()).getModifiers(prev, mod);
 							
 							if(map != null)
 								event.entityLiving.getAttributeMap().removeAttributeModifiers(map);
@@ -499,12 +499,12 @@ public class ModEventHandler {
 				for(ItemStack mod : ArmorModHandler.pryMods(armor)) {
 					
 					if(mod != null && mod.getItem() instanceof ItemArmorMod) {
-						((ItemArmorMod)mod.getItem()).modUpdate(event.entityLiving, armor);
+						((ItemArmorMod)mod.getItem()).modUpdate(event.entityLiving, armor, mod);
 						HazardSystem.applyHazards(mod, event.entityLiving);
 						
 						if(reapply) {
 							
-							Multimap map = ((ItemArmorMod)mod.getItem()).getModifiers(armor);
+							Multimap map = ((ItemArmorMod)mod.getItem()).getModifiers(armor, mod);
 							
 							if(map != null)
 								event.entityLiving.getAttributeMap().applyAttributeModifiers(map);
@@ -754,7 +754,7 @@ public class ModEventHandler {
 				for(ItemStack mod : ArmorModHandler.pryMods(armor)) {
 					
 					if(mod != null && mod.getItem() instanceof ItemArmorMod) {
-						((ItemArmorMod)mod.getItem()).modDamage(event, armor);
+						((ItemArmorMod)mod.getItem()).modDamage(event, armor, mod);
 					}
 				}
 			}

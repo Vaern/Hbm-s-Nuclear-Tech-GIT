@@ -72,11 +72,11 @@ public class ItemArmorMod extends Item {
 		list.add(stack.getDisplayName());
 	}
 	
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) { }
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) { }
 	
-	public void modDamage(LivingHurtEvent event, ItemStack armor) { }
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) { }
 	
-	public Multimap getModifiers(ItemStack armor) { return null; }
+	public Multimap getModifiers(ItemStack armor, ItemStack mod) { return null; }
 	
 	public boolean isModApplicable(int armor, int slot, ItemStack mod) {
 		return ((armor == 0 && helmet) || (armor == 1 && chestplate) || (armor == 2 && leggings) || (armor == 3 && boots)) && type == slot;

@@ -41,7 +41,7 @@ public class ItemModTesla extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(!entity.worldObj.isRemote && entity instanceof EntityPlayer && armor.getItem() instanceof ArmorFSBPowered && ArmorFSBPowered.hasFSBArmor((EntityPlayer)entity)) {
 			targets = TileEntityTesla.zap(entity.worldObj, entity.posX, entity.posY + 1.25, entity.posZ, 5, entity);

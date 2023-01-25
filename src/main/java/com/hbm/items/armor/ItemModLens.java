@@ -42,15 +42,12 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
 	}
 
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack lens) {
 		World world = entity.worldObj;
 		if(world.isRemote) return;
 		if(!(entity instanceof EntityPlayerMP)) return;
 		
 		EntityPlayerMP player = (EntityPlayerMP) entity;
-		ItemStack lens = ArmorModHandler.pryMods(armor)[ArmorModHandler.extra];
-		
-		if(lens == null) return;
 		
 		int freq = this.getFreq(lens);
 		Satellite sat = SatelliteSavedData.getData(world).getSatFromFreq(freq);

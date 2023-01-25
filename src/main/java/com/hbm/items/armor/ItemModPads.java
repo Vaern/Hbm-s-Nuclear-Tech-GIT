@@ -44,14 +44,14 @@ public class ItemModPads extends ItemArmorMod {
 	}
 
 	@Override
-	public void modDamage(LivingHurtEvent event, ItemStack armor) {
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) {
 		
 		if(event.source == DamageSource.fall)
 			event.ammount *= damageMod;
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(!entity.worldObj.isRemote && this == ModItems.pads_static && entity instanceof EntityPlayer) {
 			

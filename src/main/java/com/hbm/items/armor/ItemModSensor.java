@@ -36,12 +36,12 @@ public class ItemModSensor extends ItemArmorMod {
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean equipped) {
 		if(entity instanceof EntityLivingBase) {
-			modUpdate((EntityLivingBase) entity, null);
+			modUpdate((EntityLivingBase) entity, null, null);
 		}
 	}
 
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(entity.worldObj.isRemote || entity.worldObj.getTotalWorldTime() % 20 != 0) return;
 

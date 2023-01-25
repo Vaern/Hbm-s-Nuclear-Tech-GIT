@@ -35,7 +35,7 @@ public class ItemModMilk extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		List<Integer> ints = new ArrayList();
 

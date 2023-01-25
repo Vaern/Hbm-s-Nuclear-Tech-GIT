@@ -36,7 +36,7 @@ public class ItemModDefuser extends ItemArmorMod {
 	}
 
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(entity.worldObj.isRemote || entity.worldObj.getTotalWorldTime() % 20 != 0) return;
 		

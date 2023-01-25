@@ -41,7 +41,7 @@ public class ItemModWD40 extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modDamage(LivingHurtEvent event, ItemStack armor) {
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) {
 		
 		if(!event.entityLiving.worldObj.isRemote && armor.getItemDamage() > 0 && event.entityLiving.getRNG().nextInt(5) != 0) {
 			armor.setItemDamage(armor.getItemDamage() - 1);
@@ -49,7 +49,7 @@ public class ItemModWD40 extends ItemArmorMod {
 	}
 	
 	@Override
-	public Multimap getModifiers(ItemStack armor) {
+	public Multimap getModifiers(ItemStack armor, ItemStack mod) {
 		Multimap multimap = super.getAttributeModifiers(armor);
 		
 		multimap.put(SharedMonsterAttributes.maxHealth.getAttributeUnlocalizedName(),
@@ -59,7 +59,7 @@ public class ItemModWD40 extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(entity.worldObj.isRemote && entity.hurtTime > 0) {
 			NBTTagCompound data = new NBTTagCompound();

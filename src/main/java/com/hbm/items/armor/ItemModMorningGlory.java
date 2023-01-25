@@ -32,7 +32,7 @@ public class ItemModMorningGlory extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modDamage(LivingHurtEvent event, ItemStack armor) {
+	public void modDamage(LivingHurtEvent event, ItemStack armor, ItemStack mod) {
 		
 		if(!event.entity.worldObj.isRemote && event.entity.worldObj.rand.nextInt(20) == 0) {
 			event.entityLiving.addPotionEffect(new PotionEffect(Potion.resistance.id, 100, 4));
@@ -40,7 +40,7 @@ public class ItemModMorningGlory extends ItemArmorMod {
 	}
 	
 	@Override
-	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
+	public void modUpdate(EntityLivingBase entity, ItemStack armor, ItemStack mod) {
 		
 		if(!entity.worldObj.isRemote && entity.isPotionActive(Potion.wither.id)) {
 			entity.removePotionEffect(Potion.wither.id);
