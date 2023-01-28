@@ -2303,6 +2303,7 @@ public class ModItems {
 	public static Item neutrino_lens;
 	public static Item gas_tester;
 	public static Item defuser_gold;
+	public static Item relic_mod;
 
 	public static Item hazmat_helmet;
 	public static Item hazmat_plate;
@@ -3551,7 +3552,8 @@ public class ModItems {
 		neutrino_lens = new ItemModLens().setUnlocalizedName("neutrino_lens").setTextureName(RefStrings.MODID + ":neutrino_lens");
 		gas_tester = new ItemModSensor().setUnlocalizedName("gas_tester").setTextureName(RefStrings.MODID + ":gas_tester");
 		defuser_gold = new ItemModDefuser().setUnlocalizedName("defuser_gold").setTextureName(RefStrings.MODID + ":defuser_gold");
-
+		relic_mod = new ItemRelicMod().setUnlocalizedName("relic_mod").setTextureName(RefStrings.MODID + ":relic_mod");
+		
 		cap_nuka = new Item().setUnlocalizedName("cap_nuka").setCreativeTab(MainRegistry.consumableTab).setTextureName(RefStrings.MODID + ":cap_nuka");
 		cap_quantum = new Item().setUnlocalizedName("cap_quantum").setCreativeTab(MainRegistry.consumableTab).setTextureName(RefStrings.MODID + ":cap_quantum");
 		cap_sparkle = new Item().setUnlocalizedName("cap_sparkle").setCreativeTab(MainRegistry.consumableTab).setTextureName(RefStrings.MODID + ":cap_sparkle");
@@ -7859,6 +7861,7 @@ public class ModItems {
 		GameRegistry.registerItem(neutrino_lens, neutrino_lens.getUnlocalizedName());
 		GameRegistry.registerItem(gas_tester, gas_tester.getUnlocalizedName());
 		GameRegistry.registerItem(defuser_gold, defuser_gold.getUnlocalizedName());
+		GameRegistry.registerItem(relic_mod, relic_mod.getUnlocalizedName());
 		
 		//Chaos
 		GameRegistry.registerItem(chocolate_milk, chocolate_milk.getUnlocalizedName());

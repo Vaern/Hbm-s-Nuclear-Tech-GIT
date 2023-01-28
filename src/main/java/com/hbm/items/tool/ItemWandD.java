@@ -15,6 +15,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemBookLore;
 import com.hbm.items.special.ItemBookLore.BookLoreType;
 import com.hbm.items.special.ItemKitCustom;
+import com.hbm.items.special.ItemRelicMod;
 import com.hbm.items.special.ItemBedrockOre.EnumBedrockOre;
 import com.hbm.lib.Library;
 import com.hbm.saveddata.TomSaveData;
@@ -50,11 +51,15 @@ public class ItemWandD extends Item {
 		
 		if(pos != null) {
 			
-			TomSaveData data = TomSaveData.forWorld(world);
+			ItemStack t = ItemRelicMod.generateRelic(world.rand, ModItems.relic_mod);
+			player.inventory.addItemStackToInventory(t);
+			player.inventoryContainer.detectAndSendChanges();
+			
+			/*TomSaveData data = TomSaveData.forWorld(world);
 			data.impact = false;
 			data.fire = 0F;
 			data.dust = 0F;
-			data.markDirty();
+			data.markDirty();*/
 			
 			/*EntityTomBlast tom = new EntityTomBlast(world);
 			tom.posX = pos.blockX;

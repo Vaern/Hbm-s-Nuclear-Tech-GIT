@@ -138,7 +138,7 @@ public class ModEventHandlerImpact {
 		
 		TomSaveData data = TomSaveData.getLastCachedOrNull();
 		
-		if(event.biome == null) {
+		if(event.biome == null || data == null) {
 			return;
 		}
 		
