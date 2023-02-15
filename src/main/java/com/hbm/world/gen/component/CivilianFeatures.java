@@ -7,10 +7,6 @@ import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockBobble.TileEntityBobble;
 import com.hbm.lib.HbmChestContents;
 import com.hbm.util.LootGenerator;
-import com.hbm.world.gen.component.Component.ConcreteBricks;
-import com.hbm.world.gen.component.Component.LabTiles;
-import com.hbm.world.gen.component.Component.Sandstone;
-import com.hbm.world.gen.component.Component.SuperConcrete;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemDoor;

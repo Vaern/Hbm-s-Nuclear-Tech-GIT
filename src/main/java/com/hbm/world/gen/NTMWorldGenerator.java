@@ -117,9 +117,8 @@ public class NTMWorldGenerator implements IWorldGenerator {
 		if(isBiomeOfType(biome, Type.JUNGLE) && rand.nextInt(8) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS))
 			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.TOBACCO.ordinal()).locateAndGenerate(world, rand, posX, posZ);
 		
-		if(!isBiomeOfType(biome, Type.COLD) && rand.nextInt(64) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS)) {
+		if(!isBiomeOfType(biome, Type.COLD) && rand.nextInt(64) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.FLOWERS))
 			new WorldGenPlants(ModBlocks.plant_flower, EnumFlowerType.WEED.ordinal()).locateAndGenerate(world, rand, posX, posZ);
-		}
 		
 		if(isBiomeOfType(biome, Type.RIVER) && rand.nextInt(4) == 0 && decorate(world, rand, chunkX, chunkZ, Decorate.EventType.LILYPAD)) //sadly there's no generic 'plant' type
 			new WorldGenPlants(ModBlocks.reeds).locateAndGenerate(world, rand, posX, posZ);
