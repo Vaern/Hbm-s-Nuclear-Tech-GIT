@@ -6,26 +6,29 @@ import java.util.List;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.IPersistentInfoProvider;
-import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.inventory.fluid.trait.FT_Flammable;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.IRepairable;
 import com.hbm.tileentity.TileEntityProxyCombo;
+import com.hbm.tileentity.machine.storage.TileEntityMachineBattery;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFluidTank;
 import com.hbm.util.I18nUtil;
 
 import api.hbm.block.IToolable;
 import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
@@ -40,9 +43,9 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
-		if(meta >= 12)
-			return new TileEntityMachineFluidTank();
-		return new TileEntityProxyCombo().fluid();
+		if(meta >= 12) return new TileEntityMachineFluidTank();
+		if(meta >= 6) return new TileEntityProxyCombo().fluid();
+		return null;
 	}
 
 	@Override
@@ -68,9 +71,10 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 			
 			TileEntityMachineFluidTank tank = (TileEntityMachineFluidTank) world.getTileEntity(pos[0], pos[1], pos[2]);
 			
-			if(tank.hasExploded) return false;
-
-			FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos[0], pos[1], pos[2]);
+			if(tank != null) {
+				if(tank.hasExploded) return false;
+				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos[0], pos[1], pos[2]);
+			}
 			return true;
 		} else {
 			return true;
@@ -80,34 +84,16 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	@Override
 	protected void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {
 		super.fillSpace(world, x, y, z, dir, o);
-		
-		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-		this.makeExtra(world, x + rot.offsetX, y, z + rot.offsetZ);
-		this.makeExtra(world, x - rot.offsetX, y, z - rot.offsetZ);
-		this.makeExtra(world, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
-		this.makeExtra(world, x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ);
-	}
-
-	@Override
-	public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
-		
-		if(!player.capabilities.isCreativeMode) {
-			harvesters.set(player);
-			this.dropBlockAsItem(world, x, y, z, meta, 0);
-			harvesters.set(null);
-		}
+		this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ + 1);
+		this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ - 1);
+		this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ + 1);
+		this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ - 1);
 	}
 	
 	@Override
 	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
 		return IPersistentNBT.getDrops(world, x, y, z, this);
-	}
-	
-	@Override
-	public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {
-		player.addStat(StatList.mineBlockStatArray[getIdFromBlock(this)], 1);
-		player.addExhaustion(0.025F);
 	}
 
 	@Override
@@ -136,37 +122,47 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 		
 		if(!tank.hasExploded) {
 			tank.explode();
+			
+			if(explosion.exploder != null && explosion.exploder instanceof EntityBombletZeta) {
+				if(tank.tank.getTankType().getTrait(FT_Flammable.class) == null) return;
+				
+				List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class,
+						AxisAlignedBB.getBoundingBox(x + 0.5, y + 0.5, z + 0.5, x + 0.5, y + 0.5, z + 0.5).expand(100, 100, 100));
+				
+				for(EntityPlayer p : players) p.triggerAchievement(MainRegistry.achInferno);
+			}
 		} else {
 			world.setBlock(pos[0], pos[1], pos[2], Blocks.air);
 		}
 	}
 
 	@Override
-	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, int side, float fX, float fY, float fZ, ToolType tool) {
-		
-		if(tool != ToolType.TORCH) return false;
-		return IRepairable.tryRepairMultiblock(world, x, y, z, this, Minecraft.getMinecraft().thePlayer);
+	public boolean hasComparatorInputOverride() {
+		return true;
 	}
 
 	@Override
+	public int getComparatorInputOverride(World world, int x, int y, int z, int side) {
+
+		TileEntity te = world.getTileEntity(x, y, z);
+
+		if(!(te instanceof TileEntityMachineFluidTank))
+			return 0;
+
+		TileEntityMachineFluidTank tank = (TileEntityMachineFluidTank) te;
+		return tank.getComparatorPower();
+	}
+
+	@Override
+	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, int side, float fX, float fY, float fZ, ToolType tool) {
+		
+		if(tool != ToolType.TORCH) return false;
+		return IRepairable.tryRepairMultiblock(world, x, y, z, this, player);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
 	public void printHook(Pre event, World world, int x, int y, int z) {
-		
-		List<AStack> materials = IRepairable.getRepairMaterials(world, x, y, z, this, Minecraft.getMinecraft().thePlayer);
-		
-		if(materials == null) return;
-		
-		List<String> text = new ArrayList();
-		text.add(EnumChatFormatting.GOLD + "Repair with:");
-		
-		for(AStack stack : materials) {
-			try {
-				ItemStack display = stack.extractForCyclingDisplay(20);
-				text.add("- " + display.getDisplayName() + " x" + display.stackSize);
-			} catch(Exception ex) {
-				text.add(EnumChatFormatting.RED + "- ERROR");
-			}
-		}
-		
-		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getUnlocalizedName() + ".name"), 0xffff00, 0x404000, text);
+		IRepairable.addGenericOverlay(event, world, x, y, z, this);
 	}
 }

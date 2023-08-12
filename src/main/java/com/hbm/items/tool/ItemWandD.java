@@ -2,35 +2,15 @@ package com.hbm.items.tool;
 
 import java.util.List;
 
-import com.hbm.blocks.ModBlocks;
-import com.hbm.entity.effect.EntityNukeTorex;
-import com.hbm.entity.logic.EntityNukeExplosionMK5;
-import com.hbm.entity.logic.EntityTomBlast;
-import com.hbm.entity.mob.siege.EntitySiegeTunneler;
-import com.hbm.items.ModItems;
-import com.hbm.items.special.ItemBookLore;
-import com.hbm.items.special.ItemBookLore.BookLoreType;
-import com.hbm.items.special.ItemKitCustom;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionHandler.PollutionType;
 import com.hbm.lib.Library;
-import com.hbm.saveddata.TomSaveData;
-import com.hbm.world.feature.OilSpot;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EntityTracker;
-import net.minecraft.entity.EntityTrackerEntry;
-import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IntHashMap;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.gen.structure.MapGenStronghold;
-import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 public class ItemWandD extends Item {
 
@@ -43,6 +23,23 @@ public class ItemWandD extends Item {
 		MovingObjectPosition pos = Library.rayTrace(player, 500, 1, false, true, false);
 		
 		if(pos != null) {
+			
+			/*ExplosionVNT vnt = new ExplosionVNT(world, pos.hitVec.xCoord, pos.hitVec.yCoord, pos.hitVec.zCoord, 7);
+			vnt.setBlockAllocator(new BlockAllocatorBulkie(60));
+			vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(new BlockMutatorBulkie(ModBlocks.block_slag)).setNoDrop());
+			vnt.setEntityProcessor(new EntityProcessorStandard());
+			vnt.setPlayerProcessor(new PlayerProcessorStandard());
+			vnt.setSFX(new ExplosionEffectStandard());
+			vnt.explode();*/
+			
+			PollutionHandler.incrementPollution(world, pos.blockX, pos.blockY, pos.blockZ, PollutionType.SOOT, 15);
+			
+			/*TimeAnalyzer.startCount("setBlock");
+			world.setBlock(pos.blockX, pos.blockY, pos.blockZ, Blocks.dirt);
+			TimeAnalyzer.startEndCount("getBlock");
+			world.getBlock(pos.blockX, pos.blockY, pos.blockZ);
+			TimeAnalyzer.endCount();
+			TimeAnalyzer.dump();*/
 			
 			/*TomSaveData data = TomSaveData.forWorld(world);
 			data.impact = false;
@@ -57,36 +54,17 @@ public class ItemWandD extends Item {
 			tom.destructionRange = 600;
 			world.spawnEntityInWorld(tom);*/
 			
-			/*ItemStack itemStack = new ItemStack(ModItems.book_lore);
-			BookLoreType.setTypeForStack(itemStack, BookLoreType.BOOK_IODINE);
-			
-			player.inventory.addItemStackToInventory(itemStack);
-			player.inventoryContainer.detectAndSendChanges();*/
-			
-			//use sparingly
-			/*int k = ((pos.blockX >> 4) << 4) + 8;
-			int l = ((pos.blockZ >> 4) << 4) + 8;
-			
-			MapGenBunker.Start start = new MapGenBunker.Start(world, world.rand, pos.blockX >> 4, pos.blockZ >> 4);
-			start.generateStructure(world, world.rand, new StructureBoundingBox(k - 124, l - 124, k + 15 + 124, l + 15 + 124));*/
-			//MapGenStronghold.Start startS = new MapGenStronghold.Start(world, world.rand, pos.blockX >> 4, pos.blockZ >> 4);
-			//startS.generateStructure(world, world.rand, new StructureBoundingBox(k - 124, l - 124, k + 15 + 124, l + 15 + 124));
-			
-			/*OilSpot.generateOilSpot(world, pos.blockX, pos.blockZ, 20, 500);*/
-			
-			EntityNukeTorex torex = new EntityNukeTorex(world);
+			/*EntityNukeTorex torex = new EntityNukeTorex(world);
 			torex.setPositionAndRotation(pos.blockX, pos.blockY + 1, pos.blockZ, 0, 0);
 			torex.getDataWatcher().updateObject(10, 1.5F);
 			world.spawnEntityInWorld(torex);
+			EntityTracker entitytracker = ((WorldServer) world).getEntityTracker();
+			IntHashMap map = ReflectionHelper.getPrivateValue(EntityTracker.class, entitytracker, "trackedEntityIDs", "field_72794_c");
+			EntityTrackerEntry entry = (EntityTrackerEntry) map.lookup(torex.getEntityId());
+			entry.blocksDistanceThreshold = 1000;
+			world.spawnEntityInWorld(EntityNukeExplosionMK5.statFacNoRad(world, 150, pos.blockX, pos.blockY + 1, pos.blockZ));*/
 			
-            EntityTracker entitytracker = ((WorldServer)world).getEntityTracker();
-            //ReflectionHelper.setPrivateValue(EntityTracker.class, entitytracker, 1000, "entityViewDistance");
-            
-            IntHashMap map = ReflectionHelper.getPrivateValue(EntityTracker.class, entitytracker, "trackedEntityIDs", "field_72794_c");
-            EntityTrackerEntry entry = (EntityTrackerEntry) map.lookup(torex.getEntityId());
-            entry.blocksDistanceThreshold = 1000;
-			
-			world.spawnEntityInWorld(EntityNukeExplosionMK5.statFacNoRad(world, 150, pos.blockX, pos.blockY + 1, pos.blockZ));
+			//DungeonToolbox.generateBedrockOreWithChance(world, world.rand, pos.blockX, pos.blockZ, EnumBedrockOre.TITANIUM,	new FluidStack(Fluids.SULFURIC_ACID, 500), 2, 1);
 			
 			/*EntitySiegeTunneler tunneler = new EntitySiegeTunneler(world);
 			tunneler.setPosition(pos.blockX, pos.blockY + 1, pos.blockZ);

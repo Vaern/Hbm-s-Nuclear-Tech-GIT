@@ -24,12 +24,13 @@ public class GeneralConfig {
 	public static boolean enableCrosshairs = true;
 	public static boolean enableReflectorCompat = false;
 	public static boolean enableRenderDistCheck = true;
-	public static boolean enableCustomDashKeybind = false;
 	public static boolean enableReEval = true;
 	public static boolean enableSilentCompStackErrors = true;
 	public static boolean enableChunkyNEIHandler = true;
 	public static boolean enableSkyboxes = true;
 	public static boolean enableImpactWorldProvider = true;
+	public static boolean enableStatReRegistering = true;
+	public static boolean enableKeybindOverlap = true;
 	public static int hintPos = 0;
 
 	public static boolean enable528 = false;
@@ -38,6 +39,7 @@ public class GeneralConfig {
 	public static boolean enable528ColtanSpawn = false;
 	public static boolean enable528BedrockDeposit = true;
 	public static boolean enable528BedrockSpawn = false;
+	public static boolean enable528BosniaSimulator = true;
 	public static int coltanRate = 2;
 	public static int bedrockRate = 50;
 
@@ -52,6 +54,7 @@ public class GeneralConfig {
 	public static boolean enableLBSMUnlockAnvil = true;
 	public static boolean enableLBSMSimpleCrafting = true;
 	public static boolean enableLBSMSimpleMedicineRecipes = true;
+	public static boolean enableLBSMSafeCrates = true;
 	public static boolean enableLBSMSafeMEDrives = true;
 	public static boolean enableLBSMIGen = true;
 	public static int schrabRate = 20;
@@ -78,13 +81,14 @@ public class GeneralConfig {
 		enableCrosshairs = config.get(CATEGORY_GENERAL, "1.22_enableCrosshairs", true, "Shows custom crosshairs when an NTM gun is being held").getBoolean(true);
 		enableReflectorCompat = config.get(CATEGORY_GENERAL, "1.24_enableReflectorCompat", false, "Enable old reflector oredict name (\"plateDenseLead\") instead of new \"plateTungCar\"").getBoolean(false);
 		enableRenderDistCheck = config.get(CATEGORY_GENERAL, "1.25_enableRenderDistCheck", true, "Check invalid render distances (over 16, without OptiFine) and fix it").getBoolean(true);
-		enableCustomDashKeybind = config.get(CATEGORY_GENERAL, "1.26_enableCustomDashKeybind", false, "Enable custom dash keybind instead of shift").getBoolean(false);
 		enableReEval = config.get(CATEGORY_GENERAL, "1.27_enableReEval", true, "Allows re-evaluating power networks on link remove instead of destroying and recreating").getBoolean(true);
 		enableSilentCompStackErrors = config.get(CATEGORY_GENERAL, "1.28_enableSilentCompStackErrors", false, "Enabling this will disable log spam created by unregistered items in ComparableStack instances.").getBoolean(false);
 		hintPos = CommonConfig.createConfigInt(config, CATEGORY_GENERAL, "1.29_hudOverlayPosition", "0: Top left\n1: Top right\n2: Center right\n3: Center Left", 0);
 		enableChunkyNEIHandler = config.get(CATEGORY_GENERAL, "1.30_enableChunkyNEIHandler", true, "If enabled, registers a NEI handler that will show the chosen item in a larger view.").getBoolean(true);
 		enableSkyboxes = config.get(CATEGORY_GENERAL, "1.31_enableSkyboxes", true, "If enabled, will try to use NTM's custom skyboxes.").getBoolean(true);
 		enableImpactWorldProvider = config.get(CATEGORY_GENERAL, "1.32_enableImpactWorldProvider", true, "If enabled, registers custom world provider which modifies lighting and sky colors for post impact effects.").getBoolean(true);
+		enableStatReRegistering = config.get(CATEGORY_GENERAL, "1.33_enableStatReRegistering", true, "If enabled, will re-register item crafting/breaking/usage stats in order to fix a forge bug where modded items just won't show up.").getBoolean(true);
+		enableKeybindOverlap = config.get(CATEGORY_GENERAL, "1.34_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
 		
 		final String CATEGORY_528 = CommonConfig.CATEGORY_528;
 
@@ -99,6 +103,7 @@ public class GeneralConfig {
 		enable528ColtanSpawn = CommonConfig.createConfigBool(config, CATEGORY_528, "X528_enableColtanSpawning", "Enables coltan ore as a random spawn in the world. Unlike the deposit option, coltan will not just spawn in one central location.", false);
 		enable528BedrockDeposit = CommonConfig.createConfigBool(config, CATEGORY_528, "X528_enableBedrockDepsoit", "Enables bedrock coltan ores in the coltan deposit. These ores can be drilled to extract infinite coltan, albeit slowly.", true);
 		enable528BedrockSpawn = CommonConfig.createConfigBool(config, CATEGORY_528, "X528_enableBedrockSpawning", "Enables the bedrock coltan ores as a rare spawn. These will be rarely found anywhere in the world.", false);
+		enable528BosniaSimulator = CommonConfig.createConfigBool(config, CATEGORY_528, "X528_enableBosniaSimulator", "Enables anti tank mines spawning all over the world.", true);
 		coltanRate = CommonConfig.createConfigInt(config, CATEGORY_528, "X528_oreColtanFrequency", "Determines how many coltan ore veins are to be expected in a chunk. These values do not affect the frequency in deposits, and only apply if random coltan spanwing is enabled.", 2);
 		bedrockRate = CommonConfig.createConfigInt(config, CATEGORY_528, "X528_bedrockColtanFrequency", "Determines how often (1 in X) bedrock coltan ores spawn. Applies for both the bedrock ores in the coltan deposit (if applicable) and the random bedrock ores (if applicable)", 50);
 		
@@ -121,6 +126,7 @@ public class GeneralConfig {
 		enableLBSMUnlockAnvil = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_recipeUnlockAnvil", "When enabled, all anvil recipes are available at tier 1", true);
 		enableLBSMSimpleCrafting = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_recipeSimpleCrafting", "When enabled, some uncraftable or more expansive items get simple crafting recipes. Scorched uranium also becomes washable", true);
 		enableLBSMSimpleMedicineRecipes = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_recipeSimpleMedicine", "When enabled, makes some medicine recipes (line ones that require bismuth) much more affordable", true);
+		enableLBSMSafeCrates = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_safeCrates", "When enabled, prevents crates from becoming radioactive", true);
 		enableLBSMSafeMEDrives = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_safeMEDrives", "When enabled, prevents ME Drives and Portable Cells from becoming radioactive", true);
 		enableLBSMIGen = CommonConfig.createConfigBool(config, CATEGORY_LBSM, "LBSM_iGen", "When enabled, restores the industrial generator to pre-nerf power", true);
 		schrabRate = CommonConfig.createConfigInt(config, CATEGORY_LBSM, "LBSM_schrabOreRate", "Changes the amount of uranium ore needed on average to create one schrabidium ore using nukes. Standard mode value is 100", 20);

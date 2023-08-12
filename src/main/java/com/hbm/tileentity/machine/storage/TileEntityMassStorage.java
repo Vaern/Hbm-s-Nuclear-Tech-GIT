@@ -1,21 +1,27 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.inventory.container.ContainerMassStorage;
+import com.hbm.inventory.gui.GUIMassStorage;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.INBTPacketReceiver;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
 
 public class TileEntityMassStorage extends TileEntityCrateBase implements INBTPacketReceiver, IControlReceiver {
 	
 	private int stack = 0;
 	public boolean output = false;
 	private int capacity;
+	public int redstone = 0;
 	
 	@SideOnly(Side.CLIENT) public ItemStack type;
 	
@@ -37,6 +43,13 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements INBTPa
 	public void updateEntity() {
 		
 		if(!worldObj.isRemote) {
+			
+			int newRed = this.getStockpile() * 15 / this.capacity;
+			
+			if(newRed != this.redstone) {
+				this.redstone = newRed;
+				this.markDirty();
+			}
 			
 			if(slots[0] != null && slots[0].getItem() == ModItems.fluid_barrel_infinite) {
 				this.stack = this.getCapacity();
@@ -127,6 +140,7 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements INBTPa
 		this.stack = nbt.getInteger("stack");
 		this.output = nbt.getBoolean("output");
 		this.capacity = nbt.getInteger("capacity");
+		this.redstone = nbt.getByte("redstone");
 		
 		if(this.capacity <= 0) {
 			this.capacity = 10_000;
@@ -139,6 +153,7 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements INBTPa
 		nbt.setInteger("stack", stack);
 		nbt.setBoolean("output", output);
 		nbt.setInteger("capacity", capacity);
+		nbt.setByte("redstone", (byte) redstone);
 	}
 
 	@Override
@@ -185,5 +200,16 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements INBTPa
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side) {
 		return new int[] { 0, 2 };
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMassStorage(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMassStorage(player.inventory, this);
 	}
 }

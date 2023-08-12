@@ -9,16 +9,20 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IFluidAcceptor;
 import com.hbm.interfaces.IFluidSource;
 import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.container.ContainerMiningLaser;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.inventory.gui.GUIMiningLaser;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.inventory.recipes.CrystallizerRecipes.CrystallizerRecipe;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
 
@@ -29,10 +33,13 @@ import api.hbm.fluid.IFluidStandardSender;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -40,9 +47,10 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements IEnergyUser, IFluidSource, IMiningDrill, IFluidStandardSender {
+public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements IEnergyUser, IFluidSource, IMiningDrill, IFluidStandardSender, IGUIProvider {
 	
 	public long power;
 	public int age = 0;
@@ -91,10 +99,10 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			if (age == 9 || age == 19)
 				fillFluidInit(tank.getTankType());
 
-			this.sendFluid(tank.getTankType(), worldObj, xCoord + 2, yCoord, zCoord, Library.POS_X);
-			this.sendFluid(tank.getTankType(), worldObj, xCoord - 2, yCoord, zCoord, Library.NEG_X);
-			this.sendFluid(tank.getTankType(), worldObj, xCoord, yCoord + 2, zCoord, Library.POS_Z);
-			this.sendFluid(tank.getTankType(), worldObj, xCoord, yCoord - 2, zCoord, Library.NEG_Z);
+			this.sendFluid(tank, worldObj, xCoord + 2, yCoord, zCoord, Library.POS_X);
+			this.sendFluid(tank, worldObj, xCoord - 2, yCoord, zCoord, Library.NEG_X);
+			this.sendFluid(tank, worldObj, xCoord, yCoord + 2, zCoord, Library.POS_Z);
+			this.sendFluid(tank, worldObj, xCoord, yCoord - 2, zCoord, Library.NEG_Z);
 			
 			power = Library.chargeTEFromItems(slots, 0, power, maxPower);
 			tank.updateTank(xCoord, yCoord, zCoord, this.worldObj.provider.dimensionId);
@@ -253,9 +261,11 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 		if(stack != null && stack.getItem() != null) {
 			if(hasCrystallizer()) {
 
-				ItemStack result = CrystallizerRecipes.getOutput(stack);
-				if(result != null && result.getItem() != ModItems.scrap) {
-					worldObj.spawnEntityInWorld(new EntityItem(worldObj, targetX + 0.5, targetY + 0.5, targetZ + 0.5, result.copy()));
+				CrystallizerRecipe result = CrystallizerRecipes.getOutput(stack, Fluids.ACID);
+				if(result == null) result = CrystallizerRecipes.getOutput(stack, Fluids.SULFURIC_ACID);
+				
+				if(result != null) {
+					worldObj.spawnEntityInWorld(new EntityItem(worldObj, targetX + 0.5, targetY + 0.5, targetZ + 0.5, result.output.copy()));
 					normal = false;
 				}
 				
@@ -347,6 +357,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 		
 		for(EntityItem item : items) {
 			
+			if(item.isDead) continue;
+			
 			if(nullifier && bad.contains(item.getEntityItem().getItem())) {
 				item.setDead();
 				continue;
@@ -419,7 +431,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 	}
 	
 	private boolean canBreak(Block block, int x, int y, int z) {
-		return block.isAir(worldObj, x, y, z) && block.getBlockHardness(worldObj, x, y, z) >= 0 && !block.getMaterial().isLiquid() && block != Blocks.bedrock;
+		return !block.isAir(worldObj, x, y, z) && block.getBlockHardness(worldObj, x, y, z) >= 0 && !block.getMaterial().isLiquid() && block != Blocks.bedrock;
 	}
 	
 	public int getRange() {
@@ -690,5 +702,16 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 	@Override
 	public FluidTank[] getAllTanks() {
 		return new FluidTank[] { tank };
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMiningLaser(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMiningLaser(player.inventory, this);
 	}
 }

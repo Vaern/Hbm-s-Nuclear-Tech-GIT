@@ -76,20 +76,16 @@ public class ItemGunChemthrower extends ItemGunBase implements IFillableItem {
 		
 		if(hasInfinity(stack, config))
 			return;
-
 		
-		if(config.reloadType != mainConfig.RELOAD_NONE) {
-			setMag(stack, getMag(stack) - this.getConsumption(stack));
-		} else {
-			player.inventory.consumeInventoryItem(getBeltType(player, stack, main));
-		}
+		setMag(stack, getMag(stack) - this.getConsumption(stack));
 	}
 
 	@Override
 	public boolean canReload(ItemStack stack, World world, EntityPlayer player) {
 		return false;
 	}
-	
+
+	@Override
 	protected void spawnProjectile(World world, EntityPlayer player, ItemStack stack, int config) {
 		
 		//spawn fluid projectile
@@ -101,6 +97,7 @@ public class ItemGunChemthrower extends ItemGunBase implements IFillableItem {
 		if(player instanceof EntityPlayerMP)
 			PacketDispatcher.wrapper.sendTo(new GunAnimationPacket(AnimType.CYCLE.ordinal()), (EntityPlayerMP) player);
 	}
+	
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean bool) {
 		

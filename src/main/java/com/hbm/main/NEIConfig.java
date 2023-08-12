@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockMotherOfAllOres.TileEntityRandomOre;
+import com.hbm.config.CustomMachineConfigJSON;
+import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
 import com.hbm.config.VersatileConfig;
 import com.hbm.handler.nei.*;
 import com.hbm.items.ModItems;
@@ -14,6 +16,8 @@ import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 import codechicken.nei.api.IHighlightHandler;
 import codechicken.nei.api.ItemInfo.Layout;
+import codechicken.nei.recipe.GuiCraftingRecipe;
+import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.ICraftingHandler;
 import codechicken.nei.recipe.IUsageHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,18 +31,19 @@ public class NEIConfig implements IConfigureNEI {
 	@Override
 	public void loadConfig() {
 		registerHandler(new AlloyFurnaceRecipeHandler());
+		registerHandler(new ShredderRecipeHandler());
+		registerHandler(new PressRecipeHandler());
 		registerHandler(new CentrifugeRecipeHandler());
 		registerHandler(new GasCentrifugeRecipeHandler());
 		registerHandler(new BreederRecipeHandler());
-		registerHandler(new ShredderRecipeHandler());
-		registerHandler(new CMBFurnaceRecipeHandler());
 		registerHandler(new CyclotronRecipeHandler());
 		registerHandler(new AssemblerRecipeHandler());
 		registerHandler(new RefineryRecipeHandler());
+		registerHandler(new VacuumRecipeHandler());
+		registerHandler(new CrackingHandler());
+		registerHandler(new ReformingHandler());
 		registerHandler(new BoilerRecipeHandler());
 		registerHandler(new ChemplantRecipeHandler());
-		registerHandler(new FluidRecipeHandler());
-		registerHandler(new PressRecipeHandler());
 		registerHandler(new CrystallizerRecipeHandler());
 		registerHandler(new BookRecipeHandler());
 		registerHandler(new FusionRecipeHandler());
@@ -51,6 +56,8 @@ public class NEIConfig implements IConfigureNEI {
 		registerHandler(new CrucibleSmeltingHandler());
 		registerHandler(new CrucibleAlloyingHandler());
 		registerHandler(new CrucibleCastingHandler());
+		registerHandler(new ToolingHandler());
+		registerHandler(new ConstructionHandler());
 		
 		//universal boyes
 		registerHandler(new ZirnoxRecipeHandler());
@@ -59,13 +66,20 @@ public class NEIConfig implements IConfigureNEI {
 		}
 		registerHandler(new LiquefactionHandler());
 		registerHandler(new SolidificationHandler());
-		registerHandler(new CrackingHandler());
+		registerHandler(new CokingHandler());
 		registerHandler(new FractioningHandler());
 		registerHandler(new BoilingHandler());
 		registerHandler(new CombinationHandler());
 		registerHandler(new SawmillHandler());
+		registerHandler(new MixerHandler());
+		registerHandler(new OutgasserHandler());
+		registerHandler(new ElectrolyserFluidHandler());
+		registerHandler(new ElectrolyserMetalHandler());
+
+		for(MachineConfiguration conf : CustomMachineConfigJSON.niceList) registerHandlerBypass(new CustomMachineHandler(conf));
 		
-		registerHandler(new ChunkyHandler());
+		//fluids
+		registerHandler(new FluidRecipeHandler());
 
 		//Some things are even beyond my control...or are they?
 		API.hideItem(ItemBattery.getEmptyBattery(ModItems.memory));
@@ -86,16 +100,14 @@ public class NEIConfig implements IConfigureNEI {
 		API.hideItem(new ItemStack(ModBlocks.transission_hatch));
 		API.hideItem(new ItemStack(ModItems.euphemium_kit));
 		API.hideItem(new ItemStack(ModItems.bobmazon_hidden));
+		API.hideItem(new ItemStack(ModItems.book_lore)); //the broken nbt-less one shouldn't show up in normal play anyway
 		if(MainRegistry.polaroidID != 11) {
 			API.hideItem(new ItemStack(ModItems.book_secret));
 			API.hideItem(new ItemStack(ModItems.book_of_));
 			API.hideItem(new ItemStack(ModItems.burnt_bark));
 			API.hideItem(new ItemStack(ModItems.ams_core_thingy));
 		}
-		API.hideItem(new ItemStack(ModBlocks.dummy_block_assembler));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_drill));
-		API.hideItem(new ItemStack(ModBlocks.dummy_block_refinery));
-		API.hideItem(new ItemStack(ModBlocks.dummy_block_turbofan));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_ams_base));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_ams_emitter));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_ams_limiter));
@@ -103,10 +115,7 @@ public class NEIConfig implements IConfigureNEI {
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_blast));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_uf6));
 		API.hideItem(new ItemStack(ModBlocks.dummy_block_puf6));
-		API.hideItem(new ItemStack(ModBlocks.dummy_port_assembler));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_drill));
-		API.hideItem(new ItemStack(ModBlocks.dummy_port_refinery));
-		API.hideItem(new ItemStack(ModBlocks.dummy_port_turbofan));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_ams_base));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_ams_emitter));
 		API.hideItem(new ItemStack(ModBlocks.dummy_port_ams_limiter));
@@ -152,6 +161,12 @@ public class NEIConfig implements IConfigureNEI {
 		API.registerRecipeHandler((ICraftingHandler) o);
 		API.registerUsageHandler((IUsageHandler) o);
 	}
+	
+	/** Bypasses the utterly useless restriction of one registered handler per class */
+	public static void registerHandlerBypass(Object o) {
+		GuiCraftingRecipe.craftinghandlers.add((ICraftingHandler) o);
+		GuiUsageRecipe.usagehandlers.add((IUsageHandler) o);
+	}
 
 	@Override
 	public String getName() {
@@ -162,5 +177,4 @@ public class NEIConfig implements IConfigureNEI {
 	public String getVersion() {
 		return RefStrings.VERSION;
 	}
-
 }

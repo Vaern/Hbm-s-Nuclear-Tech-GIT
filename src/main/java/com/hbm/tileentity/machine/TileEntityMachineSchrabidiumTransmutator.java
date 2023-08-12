@@ -1,21 +1,31 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.config.VersatileConfig;
+import com.hbm.inventory.OreDictManager;
+import com.hbm.inventory.container.ContainerMachineSchrabidiumTransmutator;
+import com.hbm.inventory.gui.GUIMachineSchrabidiumTransmutator;
 import com.hbm.inventory.recipes.MachineRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemCapacitor;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyUser;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineBase implements IEnergyUser {
+public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineBase implements IEnergyUser, IGUIProvider {
 
 	public long power = 0;
 	public int process = 0;
@@ -41,11 +51,11 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 	public boolean isItemValidForSlot(int i, ItemStack stack) {
 		switch (i) {
 		case 0:
-			if (MachineRecipes.mODE(stack, "ingotUranium"))
+			if (MachineRecipes.mODE(stack, OreDictManager.U.ingot()))
 				return true;
 			break;
 		case 2:
-			if (stack.getItem() == ModItems.redcoil_capacitor)
+			if (stack.getItem() == ModItems.redcoil_capacitor || stack.getItem() == ModItems.euphemium_capacitor)
 				return true;
 			break;
 		case 3:
@@ -79,7 +89,7 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 	@Override
 	public boolean canExtractItem(int i, ItemStack stack, int j) {
 		
-		if (i == 2 && stack.getItem() != null && stack.getItem() == ModItems.redcoil_capacitor && ItemCapacitor.getDura(stack) <= 0) {
+		if (i == 2 && stack.getItem() != null && (stack.getItem() == ModItems.redcoil_capacitor && ItemCapacitor.getDura(stack) <= 0) || stack.getItem() == ModItems.euphemium_capacitor) {
 			return true;
 		}
 
@@ -104,9 +114,8 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 	}
 
 	public boolean canProcess() {
-		if (power >= 4990000 && slots[0] != null && MachineRecipes.mODE(slots[0], "ingotUranium") && slots[2] != null
-				&& slots[2].getItem() == ModItems.redcoil_capacitor
-				&& ItemCapacitor.getDura(slots[2]) > 0
+		if (power >= 4990000 && slots[0] != null && MachineRecipes.mODE(slots[0], OreDictManager.U.ingot()) && slots[2] != null
+				&& (slots[2].getItem() == ModItems.redcoil_capacitor && ItemCapacitor.getDura(slots[2]) > 0 || slots[2].getItem() == ModItems.euphemium_capacitor)
 				&& (slots[1] == null || (slots[1] != null && slots[1].getItem() == VersatileConfig.getTransmutatorItem()
 						&& slots[1].stackSize < slots[1].getMaxStackSize()))) {
 			return true;
@@ -136,7 +145,7 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 			} else {
 				slots[1].stackSize++;
 			}
-			if (slots[2] != null) {
+			if (slots[2] != null && slots[2].getItem() == ModItems.redcoil_capacitor) {
 				ItemCapacitor.setDura(slots[2], ItemCapacitor.getDura(slots[2]) - 1);
 			}
 
@@ -185,8 +194,9 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 		}
 	}
 	
+	@Override
 	public AudioWrapper createAudioLoop() {
-		return MainRegistry.proxy.getLoopedSound("hbm:weapon.tauChargeLoop", xCoord, yCoord, zCoord, 1.0F, 1.0F);
+		return MainRegistry.proxy.getLoopedSound("hbm:weapon.tauChargeLoop", xCoord, yCoord, zCoord, 1.0F, 10F, 1.0F);
 	}
 	
 	private void updateConnections() {
@@ -195,6 +205,7 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 			this.trySubscribe(worldObj, xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ, dir);
 	}
 
+	@Override
 	public void onChunkUnload() {
 
 		if(audio != null) {
@@ -203,6 +214,7 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 		}
 	}
 
+	@Override
 	public void invalidate() {
 
 		super.invalidate();
@@ -233,5 +245,16 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 	@Override
 	public long getMaxPower() {
 		return maxPower;
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMachineSchrabidiumTransmutator(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMachineSchrabidiumTransmutator(player.inventory, this);
 	}
 }

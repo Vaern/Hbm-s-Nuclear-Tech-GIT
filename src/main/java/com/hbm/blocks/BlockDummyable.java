@@ -444,7 +444,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		z = pos[2];
 		
 		for(AxisAlignedBB aabb :this.bounding) {
-			AxisAlignedBB boxlet = getAABBRotationOffset(aabb, x, y, z, ForgeDirection.getOrientation(world.getBlockMetadata(x, y, z) - this.offset).getRotation(ForgeDirection.UP));
+			AxisAlignedBB boxlet = getAABBRotationOffset(aabb, x + 0.5, y, z + 0.5, ForgeDirection.getOrientation(world.getBlockMetadata(x, y, z) - this.offset).getRotation(ForgeDirection.UP));
 			
 			if(entityBounding.intersectsWith(boxlet)) {
 				list.add(boxlet);
@@ -452,7 +452,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		}
 	}
 	
-	public static AxisAlignedBB getAABBRotationOffset(AxisAlignedBB aabb, int x, int y, int z, ForgeDirection dir) {
+	public static AxisAlignedBB getAABBRotationOffset(AxisAlignedBB aabb, double x, double y, double z, ForgeDirection dir) {
 		
 		AxisAlignedBB newBox = null;
 
@@ -462,7 +462,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		if(dir == ForgeDirection.WEST) newBox = AxisAlignedBB.getBoundingBox(aabb.minZ, aabb.minY, -aabb.maxX, aabb.maxZ, aabb.maxY, -aabb.minX);
 		
 		if(newBox != null) {
-			newBox.offset(x + 0.5, y, z + 0.5);
+			newBox.offset(x, y, z);
 			return newBox;
 		}
 		
@@ -490,12 +490,10 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		
 		int[] pos = this.findCore(world, x, y, z);
 		if(pos == null) return;
-		TileEntity tile = world.getTileEntity(pos[0], pos[1], pos[2]);
-		if(tile == null) return;
 		
-		x = tile.xCoord;
-		y = tile.yCoord;
-		z = tile.zCoord;
+		x = pos[0];
+		y = pos[1];
+		z = pos[2];
 		
 		EntityPlayer player = event.player;
 		float interp = event.partialTicks;
@@ -503,9 +501,11 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		double dY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) interp;
 		double dZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)interp;
 		float exp = 0.002F;
+		
+		int meta = world.getBlockMetadata(x, y, z);
 
 		ICustomBlockHighlight.setup();
-		for(AxisAlignedBB aabb : this.bounding) event.context.drawOutlinedBoundingBox(aabb.expand(exp, exp, exp).getOffsetBoundingBox(x - dX + 0.5, y - dY, z - dZ + 0.5), -1);
+		for(AxisAlignedBB aabb : this.bounding) event.context.drawOutlinedBoundingBox(getAABBRotationOffset(aabb.expand(exp, exp, exp), 0, 0, 0, ForgeDirection.getOrientation(meta - offset).getRotation(ForgeDirection.UP)).getOffsetBoundingBox(x - dX + 0.5, y - dY, z - dZ + 0.5), -1);
 		ICustomBlockHighlight.cleanup();
 	}
 }

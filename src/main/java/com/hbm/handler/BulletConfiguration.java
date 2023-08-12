@@ -2,27 +2,25 @@ package com.hbm.handler;
 
 import java.util.List;
 
-import com.hbm.entity.projectile.EntityBulletBase;
+import com.hbm.entity.projectile.EntityBulletBaseNT;
+import com.hbm.entity.projectile.EntityBulletBaseNT.*;
 import com.hbm.handler.guncfg.BulletConfigFactory;
-import com.hbm.interfaces.IBulletHitBehavior;
-import com.hbm.interfaces.IBulletHurtBehavior;
-import com.hbm.interfaces.IBulletImpactBehavior;
-import com.hbm.interfaces.IBulletRicochetBehavior;
-import com.hbm.interfaces.IBulletUpdateBehavior;
-import com.hbm.interfaces.Untested;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.lib.ModDamageSource;
+import com.hbm.main.MainRegistry;
+import com.hbm.particle.SpentCasing;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
 import net.minecraft.util.EnumChatFormatting;
 
-public class BulletConfiguration {
+public class BulletConfiguration implements Cloneable {
 	
 	//what item this specific configuration consumes
-	public Item ammo;
+	public ComparableStack ammo;
 	//how many ammo units one item restores
 	public int ammoCount = 1;
 	//how fast the bullet is (in sanics per second, or sps)
@@ -56,14 +54,16 @@ public class BulletConfiguration {
 	public int HBRC;
 	//how much of the initial velocity is kept after bouncing
 	public double bounceMod;
+	//how many ticks until the projectile can hurt the shooter
+	public int selfDamageDelay = 5;
 
 	//whether or not the bullet should penetrate mobs
 	public boolean doesPenetrate;
-	//whether or not the bullet should phase through blocks
+	//disables collisions with blocks entirely
 	public boolean isSpectral;
 	//whether or not the bullet should break glass
 	public boolean doesBreakGlass;
-	//whether the bullet should stay alive after colliding with a block
+	//bullets still call the impact function when hitting blocks but do not get destroyed
 	public boolean liveAfterImpact;
 	
 	//creates a "muzzle flash" and a ton of smoke with every projectile spawned
@@ -84,11 +84,16 @@ public class BulletConfiguration {
 	public int caustic;
 	public boolean destroysBlocks;
 	public boolean instakill;
-	public IBulletHurtBehavior bHurt;
+	/*public IBulletHurtBehavior bHurt;
 	public IBulletHitBehavior bHit;
 	public IBulletRicochetBehavior bRicochet;
 	public IBulletImpactBehavior bImpact;
-	public IBulletUpdateBehavior bUpdate;
+	public IBulletUpdateBehavior bUpdate;*/
+	public IBulletHurtBehaviorNT bntHurt;
+	public IBulletHitBehaviorNT bntHit;
+	public IBulletRicochetBehaviorNT bntRicochet;
+	public IBulletImpactBehaviorNT bntImpact;
+	public IBulletUpdateBehaviorNT bntUpdate;
 	
 	//appearance
 	public int style;
@@ -98,6 +103,7 @@ public class BulletConfiguration {
 	public int plink;
 	//vanilla particle FX
 	public String vPFX = "";
+	public SpentCasing spentCasing;
 	
 	//energy projectiles
 	//power consumed per shot
@@ -133,6 +139,8 @@ public class BulletConfiguration {
 	public static final int STYLE_APDS = 14;
 	public static final int STYLE_BLADE = 15;
 	public static final int STYLE_BARREL = 16;
+	public static final int STYLE_TAU = 17;
+	public static final int STYLE_LEADBURSTER = 18;
 
 	public static final int PLINK_NONE = 0;
 	public static final int PLINK_BULLET = 1;
@@ -168,22 +176,38 @@ public class BulletConfiguration {
 	
 	public BulletConfiguration setToGuided() {
 		
-		this.bUpdate = BulletConfigFactory.getLaserSteering();
+		this.bntUpdate = BulletConfigFactory.getLaserSteering();
 		this.doesRicochet = false;
 		return this;
 	}
 	
-	public BulletConfiguration setToHoming(Item ammo) {
-		
-		this.ammo = ammo;
-		this.bUpdate = BulletConfigFactory.getHomingBehavior(200, 45);
+	public BulletConfiguration getChlorophyte() {
+		this.bntUpdate = BulletConfigFactory.getHomingBehavior(200, 45);
 		this.dmgMin *= 1.5F;
 		this.dmgMax *= 1.5F;
 		this.wear *= 0.5;
 		this.doesRicochet = false;
 		this.doesPenetrate = false;
 		this.vPFX = "greendust";
+		
+		if(this.spentCasing != null) {
+			int[] colors = this.spentCasing.getColors();
+			this.spentCasing = this.spentCasing.clone();
+			
+			if(colors != null && colors.length > 0) {
+				int[] colorClone = new int[colors.length];
+				for(int i = 0; i < colors.length; i++) colorClone[i] = colors[i];
+				colorClone[colorClone.length - 1] = 0x659750; // <- standard chlorophyte coloring in last place
+				this.spentCasing.setColor(colorClone).register(this.spentCasing.getName() + "Cl");
+			}
+		}
+		
 		return this;
+	}
+	
+	public BulletConfiguration setToHoming(ItemStack ammo) {
+		this.ammo = new ComparableStack(ammo);
+		return getChlorophyte();
 	}
 	
 	public BulletConfiguration accuracyMod(float mod) {
@@ -192,8 +216,7 @@ public class BulletConfiguration {
 		return this;
 	}
 	
-	@Untested
-	public DamageSource getDamage(EntityBulletBase bullet, EntityLivingBase shooter) {
+	public DamageSource getDamage(EntityBulletBaseNT bullet, EntityLivingBase shooter) {
 		
 		DamageSource dmg;
 		
@@ -213,5 +236,15 @@ public class BulletConfiguration {
 		if(this.dmgBypass) dmg.setDamageBypassesArmor();
 		
 		return dmg;
+	}
+	
+	@Override
+	public BulletConfiguration clone() {
+		try {
+			return (BulletConfiguration) super.clone();
+		} catch(CloneNotSupportedException e) {
+			MainRegistry.logger.catching(e);
+			return new BulletConfiguration();
+		}
 	}
 }

@@ -9,13 +9,14 @@ import com.hbm.items.ModItems;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 
 public class ItemFluidIcon extends Item {
 
@@ -38,41 +39,50 @@ public class ItemFluidIcon extends Item {
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean bool) {
 		if(stack.hasTagCompound()) {
-			if(stack.getTagCompound().getInteger("fill") > 0)
-				list.add(stack.getTagCompound().getInteger("fill") + "mB");
+			if(getQuantity(stack) > 0) list.add(getQuantity(stack) + "mB");
+			if(getPressure(stack) > 0) list.add(EnumChatFormatting.RED + "" + getPressure(stack) + "PU");
 		}
 		
 		Fluids.fromID(stack.getItemDamage()).addInfo(list);
 	}
 
 	public static ItemStack addQuantity(ItemStack stack, int i) {
-
-		if(!stack.hasTagCompound())
-			stack.stackTagCompound = new NBTTagCompound();
-
+		if(!stack.hasTagCompound()) stack.stackTagCompound = new NBTTagCompound();
 		stack.getTagCompound().setInteger("fill", i);
+		return stack;
+	}
 
+	public static ItemStack addPressure(ItemStack stack, int i) {
+		if(!stack.hasTagCompound()) stack.stackTagCompound = new NBTTagCompound();
+		stack.getTagCompound().setInteger("pressure", i);
 		return stack;
 	}
 
 	public static ItemStack make(FluidStack stack) {
-		return make(stack.type, stack.fill);
+		return make(stack.type, stack.fill, stack.pressure);
 	}
 
 	public static ItemStack make(FluidType fluid, int i) {
-		return addQuantity(new ItemStack(ModItems.fluid_icon, 1, fluid.ordinal()), i);
+		return make(fluid, i, 0);
+	}
+
+	public static ItemStack make(FluidType fluid, int i, int pressure) {
+		return addPressure(addQuantity(new ItemStack(ModItems.fluid_icon, 1, fluid.ordinal()), i), pressure);
 	}
 
 	public static int getQuantity(ItemStack stack) {
-
-		if(!stack.hasTagCompound())
-			return 0;
-
+		if(!stack.hasTagCompound()) return 0;
 		return stack.getTagCompound().getInteger("fill");
 	}
 
+	public static int getPressure(ItemStack stack) {
+		if(!stack.hasTagCompound()) return 0;
+		return stack.getTagCompound().getInteger("pressure");
+	}
+
+	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = (I18n.format(Fluids.fromID(stack.getItemDamage()).getUnlocalizedName())).trim();
+		String s = (StatCollector.translateToLocal(Fluids.fromID(stack.getItemDamage()).getUnlocalizedName())).trim();
 
 		if(s != null) {
 			return s;
@@ -80,27 +90,6 @@ public class ItemFluidIcon extends Item {
 
 		return "Unknown";
 	}
-
-	/*
-	 * @Override
-	 * 
-	 * @SideOnly(Side.CLIENT) public boolean requiresMultipleRenderPasses() {
-	 * return true; }
-	 * 
-	 * @Override
-	 * 
-	 * @SideOnly(Side.CLIENT) public void registerIcons(IIconRegister
-	 * p_94581_1_) { super.registerIcons(p_94581_1_);
-	 * 
-	 * this.overlayIcon =
-	 * p_94581_1_.registerIcon("hbm:fluid_identifier_overlay"); }
-	 * 
-	 * @Override
-	 * 
-	 * @SideOnly(Side.CLIENT) public IIcon getIconFromDamageForRenderPass(int
-	 * p_77618_1_, int p_77618_2_) { return p_77618_2_ == 1 ? this.overlayIcon :
-	 * super.getIconFromDamageForRenderPass(p_77618_1_, p_77618_2_); }
-	 */
 
 	@Override
 	@SideOnly(Side.CLIENT)

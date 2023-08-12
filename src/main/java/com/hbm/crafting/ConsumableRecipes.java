@@ -3,6 +3,7 @@ package com.hbm.crafting;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ItemAmmoEnums.AmmoFatman;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
 import com.hbm.main.CraftingManager;
@@ -28,7 +29,7 @@ public class ConsumableRecipes {
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 1), new Object[] { "TTT", "TRT", "TTT", 'T', ModItems.grenade_gascan, 'R', ModItems.detonator_laser });
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 2), new Object[] { "TTT", "TRT", "TTT", 'T', ModItems.pellet_gas, 'R', ModItems.detonator_laser });
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 3), new Object[] { "TRT", 'T', ModItems.grenade_cloud, 'R', ModItems.detonator_laser });
-		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 4), new Object[] { "TR", 'T', ModItems.ammo_nuke_high, 'R', ModItems.detonator_laser });
+		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 4), new Object[] { "TR", 'T', ModItems.ammo_nuke.stackFromEnum(AmmoFatman.HIGH), 'R', ModItems.detonator_laser });
 
 		//Food
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_waffle, 1), new Object[] { "WEW", "MPM", "WEW", 'W', Items.wheat, 'E', Items.egg, 'M', Items.milk_bucket, 'P', ModItems.man_core });
@@ -58,6 +59,7 @@ public class ConsumableRecipes {
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.coffee_radium), new Object[] { ModItems.coffee, RA226.nugget() });
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.ingot_smore), new Object[] { Items.wheat, new ItemStack(ModItems.marshmallow, 1, 1), new ItemStack(Items.dye, 1, 3) });
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.marshmallow), new Object[] { Items.stick, Items.sugar, Items.wheat_seeds });
+		CraftingManager.addShapelessAuto(new ItemStack(ModItems.quesadilla, 3), new Object[] { ModItems.cheese, ModItems.cheese, Items.bread });
 		
 		//Peas
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.peas), new Object[] { " S ", "SNS", " S ", 'S', Items.wheat_seeds, 'N', GOLD.nugget() });
@@ -118,6 +120,7 @@ public class ConsumableRecipes {
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.fmn, 1), new Object[] { COAL.dust(), PO210.dust(), ST.dust() });
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.five_htp, 1), new Object[] { COAL.dust(), EUPH.dust(), ModItems.canteen_fab });
 		CraftingManager.addShapelessAuto(new ItemStack(ModItems.cigarette, 16), new Object[] { ASBESTOS.ingot(), ANY_TAR.any(), PO210.nugget(), DictFrame.fromOne(ModItems.plant_item, ItemEnums.EnumPlantType.TOBACCO) });
+		CraftingManager.addShapelessAuto(new ItemStack(ModItems.crackpipe, 1), new Object[] { ModItems.catalytic_converter });
 		
 		if(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleMedicineRecipes) {
 			CraftingManager.addShapelessAuto(new ItemStack(ModItems.siox, 8), new Object[] { COAL.dust(), ASBESTOS.dust(), GOLD.nugget() });
@@ -197,7 +200,9 @@ public class ConsumableRecipes {
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.neutrino_lens, 1), new Object[] { "PSP", "SCS", "PSP", 'P', ANY_PLASTIC.ingot(), 'S', STAR.ingot(), 'C', KEY_CIRCUIT_BISMUTH });
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.gas_tester, 1), new Object[] { "G", "C", "I", 'G', GOLD.plate(), 'C', ModItems.circuit_aluminium, 'I', IRON.plate() });
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.defuser_gold, 1), new Object[] { "GPG", "PRP", "GPG", 'G', Items.gunpowder, 'P', GOLD.plate(), 'R', "record" });
-		
+		CraftingManager.addRecipeAuto(new ItemStack(ModItems.ballistic_gauntlet, 1), new Object[] { " WS", "WRS", " RS", 'W', ModItems.wire_copper, 'R', ModItems.ring_starmetal, 'S', STEEL.plate() });
+		CraftingManager.addRecipeAuto(new ItemStack(ModItems.night_vision, 1), "P P", "GCG", 'P', ANY_PLASTIC.ingot(), 'G', KEY_ANYGLASS, 'C', ModItems.circuit_gold);
+
 		//Stealth boy
 		CraftingManager.addRecipeAuto(new ItemStack(ModItems.stealth_boy, 1), new Object[] { " B", "LI", "LC", 'B', Blocks.stone_button, 'L', Items.leather, 'I', STEEL.ingot(), 'C', ModItems.circuit_red_copper });
 

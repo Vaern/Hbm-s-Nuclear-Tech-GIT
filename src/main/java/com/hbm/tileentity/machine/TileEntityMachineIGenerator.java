@@ -7,13 +7,16 @@ import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.IFluidAcceptor;
+import com.hbm.inventory.container.ContainerIGenerator;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.inventory.fluid.trait.FT_Flammable;
+import com.hbm.inventory.gui.GUIIGenerator;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IConfigurableMachine;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
 import com.hbm.util.fauxpointtwelve.DirPos;
@@ -22,15 +25,19 @@ import api.hbm.energy.IEnergyGenerator;
 import api.hbm.fluid.IFluidStandardReceiver;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineIGenerator extends TileEntityMachineBase implements IFluidAcceptor, IEnergyGenerator, IFluidStandardReceiver, IConfigurableMachine {
+public class TileEntityMachineIGenerator extends TileEntityMachineBase implements IFluidAcceptor, IEnergyGenerator, IFluidStandardReceiver, IConfigurableMachine, IGUIProvider {
 	
 	public long power;
 	public int spin;
@@ -57,11 +64,11 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 	public static int coalGenRate = 20;
 	public static double rtgHeatMult = 0.15D;
 	public static double waterPowerMult = 1.0D;
-	public static double lubePowerMult = 1.0D;
-	public static double heatExponent = 1.1D;
+	public static double lubePowerMult = 1.5D;
+	public static double heatExponent = 1.15D;
 	public static int waterRate = 10;
 	public static int lubeRate = 1;
-	public static long fluidHeatDiv = 5_000L;
+	public static long fluidHeatDiv = 1_000L;
 
 	@Override
 	public String getConfigName() {
@@ -268,7 +275,7 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 	
 	public int getPowerFromFuel(boolean con) {
 		FluidType type = tanks[1].getTankType();
-		return type.hasTrait(FT_Flammable.class) ? (int)(type.getTrait(FT_Flammable.class).getHeatEnergy() / (con ? 1000L : fluidHeatDiv)) : 0;
+		return type.hasTrait(FT_Flammable.class) ? (int)(type.getTrait(FT_Flammable.class).getHeatEnergy() / (con ? 5000L : fluidHeatDiv)) : 0;
 	}
 
 	@Override
@@ -369,5 +376,16 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 	@Override
 	public FluidTank[] getAllTanks() {
 		return tanks;
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerIGenerator(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIIGenerator(player.inventory, this);
 	}
 }

@@ -1,22 +1,30 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.config.VersatileConfig;
+import com.hbm.inventory.container.ContainerMachineRTG;
+import com.hbm.inventory.gui.GUIMachineRTG;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.RTGUtil;
 
 import api.hbm.energy.IEnergyGenerator;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISidedInventory, IEnergyGenerator {
+public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISidedInventory, IEnergyGenerator, IGUIProvider {
 
 	private ItemStack slots[];
 	
@@ -131,7 +139,7 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISided
 		super.readFromNBT(nbt);
 		NBTTagList list = nbt.getTagList("items", 10);
 
-		power = nbt.getInteger("power");
+		power = nbt.getLong("power");
 		heat = nbt.getInteger("heat");
 		slots = new ItemStack[getSizeInventory()];
 		
@@ -149,16 +157,14 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISided
 	@Override
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
-		nbt.setInteger("power", (short) (power));
-		nbt.setInteger("heat", (short) (heat));
+		nbt.setLong("power", power);
+		nbt.setInteger("heat", heat);
 		NBTTagList list = new NBTTagList();
 		
-		for(int i = 0; i < slots.length; i++)
-		{
-			if(slots[i] != null)
-			{
+		for(int i = 0; i < slots.length; i++) {
+			if(slots[i] != null) {
 				NBTTagCompound nbt1 = new NBTTagCompound();
-				nbt1.setByte("slot", (byte)i);
+				nbt1.setByte("slot", (byte) i);
 				slots[i].writeToNBT(nbt1);
 				list.appendTag(nbt1);
 			}
@@ -167,9 +173,9 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISided
 	}
 	
 	@Override
-	public int[] getAccessibleSlotsFromSide(int p_94128_1_){
-        return slot_io;
-    }
+	public int[] getAccessibleSlotsFromSide(int p_94128_1_) {
+		return slot_io;
+	}
 
 	@Override
 	public boolean canInsertItem(int i, ItemStack itemStack, int j) {
@@ -231,5 +237,16 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ISided
 	@Override
 	public void setPower(long i) {
 		this.power = i;
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMachineRTG(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMachineRTG(player.inventory, this);
 	}
 }

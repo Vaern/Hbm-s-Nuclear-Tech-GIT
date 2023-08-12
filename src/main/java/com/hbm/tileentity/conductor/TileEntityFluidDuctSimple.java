@@ -3,11 +3,13 @@ package com.hbm.tileentity.conductor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.calc.UnionOfTileEntitiesAndBooleansForFluids;
 import com.hbm.interfaces.IFluidDuct;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -19,7 +21,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityFluidDuctSimple extends TileEntity implements IFluidDuct {
 
-	private FluidType lastType = Fluids.NONE;
 	protected FluidType type = Fluids.NONE;
 	public List<UnionOfTileEntitiesAndBooleansForFluids> uoteab = new ArrayList<UnionOfTileEntitiesAndBooleansForFluids>();
 	
@@ -73,11 +74,19 @@ public class TileEntityFluidDuctSimple extends TileEntity implements IFluidDuct 
 	
 	@Override
 	public void updateEntity() {
-		this.updateConnections();
+		/*this.updateConnections();
 
 		if(lastType != type) {
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 			lastType = type;
+		}*/
+
+		if(this.getBlockType() == ModBlocks.fluid_duct) worldObj.setBlock(xCoord, yCoord, zCoord, ModBlocks.fluid_duct_neo);
+		if(this.getBlockType() == ModBlocks.fluid_duct_solid) worldObj.setBlock(xCoord, yCoord, zCoord, ModBlocks.fluid_duct_paintable);
+		
+		TileEntity tile = worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		if(tile instanceof TileEntityPipeBaseNT) {
+			((TileEntityPipeBaseNT) tile).setType(this.type);
 		}
 	}
 	

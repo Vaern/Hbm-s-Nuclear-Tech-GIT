@@ -2,34 +2,44 @@ package com.hbm.tileentity.machine.oil;
 
 import java.util.List;
 
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionHandler.PollutionType;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.IFluidAcceptor;
 import com.hbm.interfaces.IFluidContainer;
 import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.container.ContainerMachineGasFlare;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.inventory.fluid.trait.FT_Flammable;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Gaseous;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Gaseous_ART;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Leaded;
+import com.hbm.inventory.gui.GUIMachineGasFlare;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ParticleUtil;
+import com.hbm.util.fauxpointtwelve.DirPos;
 
 import api.hbm.energy.IEnergyGenerator;
 import api.hbm.fluid.IFluidStandardReceiver;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
+import net.minecraft.world.World;
 
-public class TileEntityMachineGasFlare extends TileEntityMachineBase implements IEnergyGenerator, IFluidContainer, IFluidAcceptor, IFluidStandardReceiver, IControlReceiver {
+public class TileEntityMachineGasFlare extends TileEntityMachineBase implements IEnergyGenerator, IFluidContainer, IFluidAcceptor, IFluidStandardReceiver, IControlReceiver, IGUIProvider {
 
 	public long power;
 	public static final long maxPower = 100000;
@@ -86,15 +96,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 		if(!worldObj.isRemote) {
 
-			this.sendPower(worldObj, xCoord + 2, yCoord, zCoord, Library.POS_X);
-			this.sendPower(worldObj, xCoord - 2, yCoord, zCoord, Library.NEG_X);
-			this.sendPower(worldObj, xCoord, yCoord, zCoord + 2, Library.POS_Z);
-			this.sendPower(worldObj, xCoord, yCoord, zCoord - 2, Library.NEG_Z);
-
-			this.trySubscribe(tank.getTankType(), worldObj, xCoord + 2, yCoord, zCoord, Library.POS_X);
-			this.trySubscribe(tank.getTankType(), worldObj, xCoord - 2, yCoord, zCoord, Library.NEG_X);
-			this.trySubscribe(tank.getTankType(), worldObj, xCoord, yCoord, zCoord + 2, Library.POS_Z);
-			this.trySubscribe(tank.getTankType(), worldObj, xCoord, yCoord, zCoord - 2, Library.NEG_Z);
+			for(DirPos pos : getConPos()) {
+				this.sendPower(worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
+				this.trySubscribe(tank.getTankType(), worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
+			}
 
 			tank.setType(3, slots);
 			tank.loadTank(1, 2, slots);
@@ -151,6 +156,11 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 						
 						if(worldObj.getTotalWorldTime() % 3 == 0)
 							this.worldObj.playSoundEffect(this.xCoord, this.yCoord + 11, this.zCoord, "hbm:weapon.flamethrowerShoot", 1.5F, 0.75F);
+
+						if(worldObj.getTotalWorldTime() % 20 == 0) {
+							PollutionHandler.incrementPollution(worldObj, xCoord, yCoord, zCoord, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
+							if(tank.getTankType().hasTrait(FT_Leaded.class)) PollutionHandler.incrementPollution(worldObj, xCoord, yCoord, zCoord, PollutionType.HEAVYMETAL, PollutionHandler.HEAVY_METAL_PER_SECOND * 5);
+						}
 					}
 				}
 			}
@@ -207,7 +217,15 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 				}
 			}
 		}
-
+	}
+	
+	public DirPos[] getConPos() {
+		return new DirPos[] {
+				new DirPos(xCoord + 2, yCoord, zCoord, Library.POS_X),
+				new DirPos(xCoord - 2, yCoord, zCoord, Library.NEG_X),
+				new DirPos(xCoord, yCoord, zCoord + 2, Library.POS_Z),
+				new DirPos(xCoord, yCoord, zCoord - 2, Library.NEG_Z)
+		};
 	}
 	
 	@Override
@@ -277,5 +295,16 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	@Override
 	public FluidTank[] getAllTanks() {
 		return new FluidTank[] { tank };
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMachineGasFlare(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMachineGasFlare(player.inventory, this);
 	}
 }

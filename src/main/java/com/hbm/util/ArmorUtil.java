@@ -2,6 +2,7 @@ package com.hbm.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HazmatRegistry;
@@ -137,7 +138,10 @@ public class ArmorUtil {
 		
 		if(checkArmor(player, ModItems.hazmat_paa_helmet, ModItems.hazmat_paa_plate, ModItems.hazmat_paa_legs, ModItems.hazmat_paa_boots) || 
 				checkArmor(player, ModItems.liquidator_helmet, ModItems.liquidator_plate, ModItems.liquidator_legs, ModItems.liquidator_boots) || 
-				checkArmor(player, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots))
+				checkArmor(player, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots) || 
+				checkArmor(player, ModItems.rpa_helmet, ModItems.rpa_plate, ModItems.rpa_legs, ModItems.rpa_boots) || 
+				checkArmor(player, ModItems.fau_helmet, ModItems.fau_plate, ModItems.fau_legs, ModItems.fau_boots) || 
+				checkArmor(player, ModItems.dns_helmet, ModItems.dns_plate, ModItems.dns_legs, ModItems.dns_boots))
 		{
 			return true;
 		}
@@ -238,7 +242,7 @@ public class ArmorUtil {
 		
 		for(String metal : metals) {
 			
-			if(name.toLowerCase().contains(metal))
+			if(name.toLowerCase(Locale.US).contains(metal))
 				return true;
 		}
 		

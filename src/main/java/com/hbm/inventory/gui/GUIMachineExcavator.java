@@ -7,6 +7,7 @@ import com.hbm.lib.RefStrings;
 import com.hbm.packet.NBTControlPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineExcavator;
+import com.hbm.util.I18nUtil;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -32,6 +33,12 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 	@Override
 	public void drawScreen(int x, int y, float interp) {
 		super.drawScreen(x, y, interp);
+
+		this.drawCustomInfoStat(x, y, guiLeft + 6, guiTop + 42, 20, 40, x, y, I18nUtil.resolveKey("excavator.drill"));
+		this.drawCustomInfoStat(x, y, guiLeft + 30, guiTop + 42, 20, 40, x, y, I18nUtil.resolveKey("excavator.crusher"));
+		this.drawCustomInfoStat(x, y, guiLeft + 54, guiTop + 42, 20, 40, x, y, I18nUtil.resolveKey("excavator.walling"));
+		this.drawCustomInfoStat(x, y, guiLeft + 78, guiTop + 42, 20, 40, x, y, I18nUtil.resolveKey("excavator.veinminer"));
+		this.drawCustomInfoStat(x, y, guiLeft + 102, guiTop + 42, 20, 40, x, y, I18nUtil.resolveKey("excavator.silktouch"));
 		
 		this.drawElectricityInfo(this, x, y, guiLeft + 220, guiTop + 18, 16, 52, drill.getPower(), drill.maxPower);
 		this.drill.tank.renderTankInfo(this, x, y, guiLeft + 202, guiTop + 18, 16, 52);
@@ -69,9 +76,20 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, 242, 96);
 		drawTexturedModalRect(guiLeft + 33, guiTop + 104, 33, 104, 176, 100);
 		
+		int i = (int) (drill.getPower() * 52 / drill.getMaxPower());
+		drawTexturedModalRect(guiLeft + 220, guiTop + 70 - i, 229, 156 - i, 16, i);
+		
+		if(drill.getPower() > drill.getPowerConsumption()) {
+			drawTexturedModalRect(guiLeft + 224, guiTop + 4, 239, 156, 9, 12);
+		}
+		
+		if(drill.getInstalledDrill() == null && System.currentTimeMillis() % 1000 < 500) {
+			drawTexturedModalRect(guiLeft + 171, guiTop + 74, 209, 154, 18, 18);
+		}
+		
 		if(drill.enableDrill) {
 			drawTexturedModalRect(guiLeft + 6, guiTop + 42, 209, 114, 20, 40);
-			if(drill.getInstalledDrill() != null) drawTexturedModalRect(guiLeft + 11, guiTop + 5, 209, 104, 10, 10);
+			if(drill.getInstalledDrill() != null && drill.getPower() >= drill.getPowerConsumption()) drawTexturedModalRect(guiLeft + 11, guiTop + 5, 209, 104, 10, 10);
 			else if(System.currentTimeMillis() % 1000 < 500) drawTexturedModalRect(guiLeft + 11, guiTop + 5, 219, 104, 10, 10);
 		}
 		
@@ -97,5 +115,7 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 			if(drill.canSilkTouch()) drawTexturedModalRect(guiLeft + 107, guiTop + 5, 209, 104, 10, 10);
 			else if(System.currentTimeMillis() % 1000 < 500) drawTexturedModalRect(guiLeft + 107, guiTop + 5, 219, 104, 10, 10);
 		}
+		
+		drill.tank.renderTank(guiLeft + 202, guiTop + 70, this.zLevel, 16, 52);
 	}
 }

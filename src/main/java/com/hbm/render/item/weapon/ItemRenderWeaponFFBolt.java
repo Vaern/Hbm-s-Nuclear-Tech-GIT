@@ -6,7 +6,6 @@ import com.hbm.items.ModItems;
 import com.hbm.render.anim.HbmAnimations;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.IItemRenderer;
@@ -53,6 +52,11 @@ public class ItemRenderWeaponFFBolt implements IItemRenderer {
 		switch(type) {
 		
 		case EQUIPPED_FIRST_PERSON:
+			
+			if(item.getItem() == ModItems.gun_bolt_action_saturnite && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+				GL11.glPopMatrix();
+				return;
+			}
 			
 			double s0 = 0.5D;
 			GL11.glTranslated(0.5, 0.25, -0.2);

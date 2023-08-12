@@ -2,18 +2,18 @@ package com.hbm.handler.guncfg;
 
 import java.util.ArrayList;
 
-import com.hbm.entity.projectile.EntityBulletBase;
 import com.hbm.extprop.HbmLivingProps;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
 import com.hbm.handler.GunConfiguration;
-import com.hbm.interfaces.IBulletHurtBehavior;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.items.ItemAmmoEnums.AmmoDart;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.ItemGunDart;
+import com.hbm.lib.HbmCollection.EnumGunManufacturer;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.util.RenderScreenOverlay.Crosshair;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
@@ -42,8 +42,8 @@ public class GunDartFactory {
 		config.reloadSoundEnd = false;
 		config.showAmmo = true;
 		
-		config.name = "Needle Gun";
-		config.manufacturer = "-";
+		config.name = "dart";
+		config.manufacturer = EnumGunManufacturer.NONE;
 		
 		config.config = new ArrayList();
 		config.config.add(BulletConfigSyncingUtil.NEEDLE_GPS);
@@ -73,8 +73,8 @@ public class GunDartFactory {
 		config.reloadSoundEnd = false;
 		config.showAmmo = true;
 		
-		config.name = "NERF blaster of unknown design";
-		config.manufacturer = "Hasbro";
+		config.name = "nerf";
+		config.manufacturer = EnumGunManufacturer.HASBRO;
 		
 		config.config = new ArrayList();
 		config.config.add(BulletConfigSyncingUtil.DART_NORMAL);
@@ -87,7 +87,7 @@ public class GunDartFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBulletConfig();
 		
-		bullet.ammo = ModItems.ammo_dart;
+		bullet.ammo = new ComparableStack(ModItems.ammo_dart.stackFromEnum(AmmoDart.GPS));
 		bullet.velocity = 5.0F;
 		bullet.spread = 0;
 		bullet.dmgMin = 1;
@@ -100,27 +100,23 @@ public class GunDartFactory {
 		bullet.effects = new ArrayList();
 		bullet.effects.add(new PotionEffect(Potion.wither.id, 60 * 20, 2));
 		
-		bullet.bHurt = new IBulletHurtBehavior() {
+		bullet.bntHurt = (bulletnt, hit) -> {
 
-			@Override
-			public void behaveEntityHurt(EntityBulletBase bullet, Entity hit) {
-				
-				if(bullet.worldObj.isRemote)
+			if(bulletnt.worldObj.isRemote)
+				return;
+
+			if(hit instanceof EntityPlayer) {
+
+				if(((EntityPlayer) hit).inventory.hasItem(ModItems.ingot_meteorite_forged))
 					return;
-				
-				if(hit instanceof EntityPlayer) {
-					
-					if(((EntityPlayer) hit).inventory.hasItem(ModItems.ingot_meteorite_forged))
-						return;
-					
-					if(bullet.shooter instanceof EntityPlayer) {
-						
-						EntityPlayer shooter = (EntityPlayer) bullet.shooter;
-						
-						if(shooter.getHeldItem() != null && shooter.getHeldItem().getItem() == ModItems.gun_darter) {
-							ItemGunDart.writePlayer(shooter.getHeldItem(), (EntityPlayer)hit);
-							shooter.playSound("random.orb", 1.0F, 1.0F);
-						}
+
+				if(bulletnt.getThrower() instanceof EntityPlayer) {
+
+					EntityPlayer shooter = (EntityPlayer) bulletnt.getThrower();
+
+					if(shooter.getHeldItem() != null && shooter.getHeldItem().getItem() == ModItems.gun_darter) {
+						ItemGunDart.writePlayer(shooter.getHeldItem(), (EntityPlayer) hit);
+						shooter.playSound("random.orb", 1.0F, 1.0F);
 					}
 				}
 			}
@@ -133,7 +129,7 @@ public class GunDartFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBulletConfig();
 		
-		bullet.ammo = ModItems.ammo_dart_nuclear;
+		bullet.ammo = new ComparableStack(ModItems.ammo_dart.stackFromEnum(AmmoDart.NUCLEAR));
 		bullet.velocity = 5.0F;
 		bullet.spread = 0;
 		bullet.dmgMin = 1;
@@ -143,23 +139,19 @@ public class GunDartFactory {
 		bullet.style = bullet.STYLE_FLECHETTE;
 		bullet.leadChance = 0;
 		
-		bullet.bHurt = new IBulletHurtBehavior() {
+		bullet.bntHurt = (bulletnt, hit) -> {
 
-			@Override
-			public void behaveEntityHurt(EntityBulletBase bullet, Entity hit) {
-				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				if(hit instanceof EntityLivingBase) {
-					
-					EntityLivingBase e = (EntityLivingBase) hit;
+			if(bulletnt.worldObj.isRemote)
+				return;
 
-					if(HbmLivingProps.getRadiation(e) < 250)
-						HbmLivingProps.setRadiation(e, 250);
-					if(HbmLivingProps.getTimer(e) <= 0)
-						HbmLivingProps.setTimer(e, MainRegistry.polaroidID * 60 * 20);
-				}
+			if(hit instanceof EntityLivingBase) {
+
+				EntityLivingBase e = (EntityLivingBase) hit;
+
+				if(HbmLivingProps.getRadiation(e) < 250)
+					HbmLivingProps.setRadiation(e, 250);
+				if(HbmLivingProps.getTimer(e) <= 0)
+					HbmLivingProps.setTimer(e, MainRegistry.polaroidID * 60 * 20);
 			}
 		};
 		
@@ -170,7 +162,7 @@ public class GunDartFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBulletConfig();
 		
-		bullet.ammo = ModItems.ammo_dart_nerf;
+		bullet.ammo = new ComparableStack(ModItems.ammo_dart.stackFromEnum(AmmoDart.NERF));
 		bullet.velocity = 1.0F;
 		bullet.gravity = 0.04D;
 		bullet.dmgMin = 0;

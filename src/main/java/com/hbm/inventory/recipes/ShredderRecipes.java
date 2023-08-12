@@ -10,11 +10,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.BlockEnums.EnumStoneType;
 import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.interfaces.Untested;
+import com.hbm.inventory.OreDictManager.DictFrame;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.items.special.ItemBedrockOre.EnumBedrockOre;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.Compat;
 
@@ -163,7 +166,8 @@ public class ShredderRecipes extends SerializableRecipe {
 		ShredderRecipes.setRecipe(Blocks.sandstone_stairs, new ItemStack(Blocks.sand, 6));
 		ShredderRecipes.setRecipe(Blocks.clay, new ItemStack(Items.clay_ball, 4));
 		ShredderRecipes.setRecipe(Blocks.hardened_clay, new ItemStack(Items.clay_ball, 4));
-		ShredderRecipes.setRecipe(Blocks.tnt, new ItemStack(Items.gunpowder, 5));
+		ShredderRecipes.setRecipe(Blocks.tnt, new ItemStack(Items.gunpowder, Compat.isModLoaded(Compat.MOD_GT6) ? 4 : 5));
+		ShredderRecipes.setRecipe(DictFrame.fromOne(ModBlocks.stone_resource, EnumStoneType.LIMESTONE), new ItemStack(ModItems.powder_calcium));
 		ShredderRecipes.setRecipe(ModBlocks.stone_gneiss, new ItemStack(ModItems.powder_lithium_tiny, 1));
 		ShredderRecipes.setRecipe(ModItems.powder_lapis, new ItemStack(ModItems.powder_cobalt_tiny, 1));
 		ShredderRecipes.setRecipe(ModItems.fragment_neodymium, new ItemStack(ModItems.powder_neodymium_tiny, 1));
@@ -211,6 +215,19 @@ public class ShredderRecipes extends SerializableRecipe {
 			ShredderRecipes.setRecipe(Blocks.sand, silicon.get(0).copy());
 		} else {
 			ShredderRecipes.setRecipe(Blocks.sand, new ItemStack(ModItems.dust, 2));
+		}
+		
+		for(EnumBedrockOre ore : EnumBedrockOre.values()) {
+			int i = ore.ordinal();
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_bedrock, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_centrifuged, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_cleaned, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_separated, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_purified, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_nitrated, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_nitrocrystalline, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_deepcleaned, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
+			ShredderRecipes.setRecipe(new ItemStack(ModItems.ore_seared, 1, i), new ItemStack(ModItems.ore_enriched, 1, i));
 		}
 		
 		for(int i = 0; i < 5; i++) ShredderRecipes.setRecipe(new ItemStack(Items.skull, 1, i), new ItemStack(ModItems.biomass, 4));
@@ -269,10 +286,6 @@ public class ShredderRecipes extends SerializableRecipe {
 		ShredderRecipes.setRecipe(ModBlocks.chain, new ItemStack(ModItems.powder_steel_tiny, 1));
 		ShredderRecipes.setRecipe(ModBlocks.steel_grate, new ItemStack(ModItems.powder_steel_tiny, 3));
 		ShredderRecipes.setRecipe(ModItems.pipes_steel, new ItemStack(ModItems.powder_steel, 27));
-		ShredderRecipes.setRecipe(ModBlocks.oil_duct, new ItemStack(ModItems.powder_steel_tiny, 3));
-		ShredderRecipes.setRecipe(ModBlocks.oil_duct_solid, new ItemStack(ModItems.powder_steel_tiny, 3));
-		ShredderRecipes.setRecipe(ModBlocks.gas_duct, new ItemStack(ModItems.powder_steel, 1));
-		ShredderRecipes.setRecipe(ModBlocks.gas_duct_solid, new ItemStack(ModItems.powder_steel, 1));
 		ShredderRecipes.setRecipe(ModBlocks.machine_fluidtank, new ItemStack(ModItems.powder_steel, 32));
 
 		/* Sellafite scrapping */
@@ -443,9 +456,9 @@ public class ShredderRecipes extends SerializableRecipe {
 	@Override
 	public void readRecipe(JsonElement recipe) {
 		JsonObject obj = (JsonObject) recipe;
-		ComparableStack comp = new ComparableStack(this.readItemStack(obj.get("input").getAsJsonArray())).makeSingular();
+		ItemStack stack = this.readItemStack(obj.get("input").getAsJsonArray());
+		ComparableStack comp = new ComparableStack(stack).makeSingular();
 		ItemStack out = this.readItemStack(obj.get("output").getAsJsonArray());
-		
 		this.shredderRecipes.put(comp, out);
 	}
 

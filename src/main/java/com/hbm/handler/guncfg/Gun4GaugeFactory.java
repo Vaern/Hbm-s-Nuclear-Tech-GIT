@@ -1,24 +1,27 @@
 package com.hbm.handler.guncfg;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hbm.entity.projectile.EntityBulletBase;
+import com.hbm.entity.projectile.EntityBulletBaseNT;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.explosion.ExplosionNukeSmall;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.handler.CasingEjector;
 import com.hbm.handler.GunConfiguration;
-import com.hbm.interfaces.IBulletHurtBehavior;
-import com.hbm.interfaces.IBulletImpactBehavior;
-import com.hbm.interfaces.IBulletUpdateBehavior;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModItems;
+import com.hbm.items.ItemAmmoEnums.Ammo4Gauge;
+import com.hbm.lib.HbmCollection;
+import com.hbm.lib.HbmCollection.EnumGunManufacturer;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.particle.SpentCasing;
+import com.hbm.particle.SpentCasing.CasingType;
 import com.hbm.potion.HbmPotion;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.BusAnimationKeyframe;
@@ -27,16 +30,23 @@ import com.hbm.render.anim.HbmAnimations.AnimType;
 import com.hbm.render.util.RenderScreenOverlay.Crosshair;
 
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.Vec3;
 import net.minecraftforge.common.IExtendedEntityProperties;
 
 public class Gun4GaugeFactory {
+	
+	private static final CasingEjector EJECTOR_SHOTGUN;
+	private static final SpentCasing CASING4GAUGE;
+
+	static {
+		EJECTOR_SHOTGUN = new CasingEjector().setMotion(Vec3.createVectorHelper(-0.4, 0.4, 0)).setOffset(Vec3.createVectorHelper(-0.5, 0, 0.5)).setAngleRange(0.01F, 0.03F);
+		CASING4GAUGE = new SpentCasing(CasingType.SHOTGUN).setScale(2.5F).setBounceMotion(0.01F, 0.03F);
+	}
 	
 	private static GunConfiguration getShotgunConfig() {
 		
@@ -52,8 +62,12 @@ public class Gun4GaugeFactory {
 		config.reloadType = GunConfiguration.RELOAD_SINGLE;
 		config.allowsInfinity = true;
 		config.hasSights = true;
+		config.absoluteFOV = true;
+		config.zoomFOV = 0.5F;
 		config.crosshair = Crosshair.L_CIRCLE;
 		config.reloadSound = GunConfiguration.RSOUND_SHOTGUN;
+		
+		config.ejector = EJECTOR_SHOTGUN;
 		
 		return config;
 	}
@@ -67,24 +81,10 @@ public class Gun4GaugeFactory {
 		config.firingSound = "hbm:weapon.revolverShootAlt";
 		config.firingPitch = 0.65F;
 		
-		config.name = "KS-23";
-		config.manufacturer = "Tulsky Oruzheiny Zavod";
-		
-		config.config = new ArrayList<Integer>();
-		config.config.add(BulletConfigSyncingUtil.G4_NORMAL);
-		config.config.add(BulletConfigSyncingUtil.G4_SLUG);
-		config.config.add(BulletConfigSyncingUtil.G4_FLECHETTE);
-		config.config.add(BulletConfigSyncingUtil.G4_FLECHETTE_PHOSPHORUS);
-		config.config.add(BulletConfigSyncingUtil.G4_EXPLOSIVE);
-		config.config.add(BulletConfigSyncingUtil.G4_SEMTEX);
-		config.config.add(BulletConfigSyncingUtil.G4_BALEFIRE);
-		config.config.add(BulletConfigSyncingUtil.G4_KAMPF);
-		config.config.add(BulletConfigSyncingUtil.G4_CANISTER);
-		config.config.add(BulletConfigSyncingUtil.G4_CLAW);
-		config.config.add(BulletConfigSyncingUtil.G4_VAMPIRE);
-		config.config.add(BulletConfigSyncingUtil.G4_VOID);
-		config.config.add(BulletConfigSyncingUtil.G4_TITAN);
-		config.config.add(BulletConfigSyncingUtil.G4_SLEEK);
+		config.name = "ks23";
+		config.manufacturer = EnumGunManufacturer.TULSKY;
+
+		config.config = HbmCollection.g4;
 		
 		return config;
 	}
@@ -102,8 +102,10 @@ public class Gun4GaugeFactory {
 		config.firingSound = "hbm:weapon.sauergun";
 		config.firingPitch = 1.0F;
 		
-		config.name = "Sauer Shotgun";
-		config.manufacturer = "Cube 2: Sauerbraten";
+		config.ejector = EJECTOR_SHOTGUN.clone().setDelay(12);
+		
+		config.name = "sauer";
+		config.manufacturer = EnumGunManufacturer.CUBE;
 		
 		config.animations.put(AnimType.CYCLE, new BusAnimation()
 				.addBus("SAUER_RECOIL", new BusAnimationSequence()
@@ -129,21 +131,7 @@ public class Gun4GaugeFactory {
 						)
 				);
 		
-		config.config = new ArrayList<Integer>();
-		config.config.add(BulletConfigSyncingUtil.G4_NORMAL);
-		config.config.add(BulletConfigSyncingUtil.G4_SLUG);
-		config.config.add(BulletConfigSyncingUtil.G4_FLECHETTE);
-		config.config.add(BulletConfigSyncingUtil.G4_FLECHETTE_PHOSPHORUS);
-		config.config.add(BulletConfigSyncingUtil.G4_EXPLOSIVE);
-		config.config.add(BulletConfigSyncingUtil.G4_SEMTEX);
-		config.config.add(BulletConfigSyncingUtil.G4_BALEFIRE);
-		config.config.add(BulletConfigSyncingUtil.G4_KAMPF);
-		config.config.add(BulletConfigSyncingUtil.G4_CANISTER);
-		config.config.add(BulletConfigSyncingUtil.G4_CLAW);
-		config.config.add(BulletConfigSyncingUtil.G4_VAMPIRE);
-		config.config.add(BulletConfigSyncingUtil.G4_VOID);
-		config.config.add(BulletConfigSyncingUtil.G4_TITAN);
-		config.config.add(BulletConfigSyncingUtil.G4_SLEEK);
+		config.config = HbmCollection.g4;
 		
 		return config;
 	}
@@ -152,11 +140,13 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.STOCK));
 		bullet.dmgMin = 5;
 		bullet.dmgMax = 8;
 		bullet.bulletsMin *= 2;
 		bullet.bulletsMax *= 2;
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaStock").setColor(0xFFD800, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -165,11 +155,13 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBulletConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_slug;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.SLUG));
 		bullet.dmgMin = 25;
 		bullet.dmgMax = 32;
 		bullet.wear = 7;
 		bullet.style = BulletConfiguration.STYLE_NORMAL;
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaSlug").setColor(0xE01A1A, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -178,7 +170,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_flechette;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.FLECHETTE));
 		bullet.dmgMin = 8;
 		bullet.dmgMax = 15;
 		bullet.bulletsMin *= 2;
@@ -187,6 +179,9 @@ public class Gun4GaugeFactory {
 		bullet.style = BulletConfiguration.STYLE_FLECHETTE;
 		bullet.HBRC = 2;
 		bullet.LBRC = 95;
+		BulletConfigFactory.makeFlechette(bullet);
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaFlech").setColor(0x1537FF, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -195,7 +190,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_flechette;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.FLECHETTE_PHOSPHORUS));
 		bullet.dmgMin = 8;
 		bullet.dmgMax = 15;
 		bullet.bulletsMin *= 2;
@@ -204,8 +199,6 @@ public class Gun4GaugeFactory {
 		bullet.style = BulletConfiguration.STYLE_FLECHETTE;
 		bullet.HBRC = 2;
 		bullet.LBRC = 95;
-		
-		bullet.ammo = ModItems.ammo_4gauge_flechette_phosphorus;
 		bullet.incendiary = 5;
 		
 		PotionEffect eff = new PotionEffect(HbmPotion.phosphorus.id, 20 * 20, 0, true);
@@ -213,20 +206,18 @@ public class Gun4GaugeFactory {
 		bullet.effects = new ArrayList();
 		bullet.effects.add(new PotionEffect(eff));
 		
-		bullet.bImpact = new IBulletImpactBehavior() {
-
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
-				
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaburst");
-				data.setString("mode", "flame");
-				data.setInteger("count", 15);
-				data.setDouble("motion", 0.05D);
-				
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
-			}
+		bullet.bntImpact = (bulletnt, x, y, z, sideHit) -> {
+			
+			NBTTagCompound data = new NBTTagCompound();
+			data.setString("type", "vanillaburst");
+			data.setString("mode", "flame");
+			data.setInteger("count", 15);
+			data.setDouble("motion", 0.05D);
+			
+			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bulletnt.posX, bulletnt.posY, bulletnt.posZ), new TargetPoint(bulletnt.dimension, bulletnt.posX, bulletnt.posY, bulletnt.posZ, 50));
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaPhos").setColor(0xF6871A, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -235,13 +226,15 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardGrenadeConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_explosive;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.EXPLOSIVE));
 		bullet.velocity *= 2;
 		bullet.gravity *= 2;
 		bullet.dmgMin = 20;
 		bullet.dmgMax = 25;
 		bullet.wear = 25;
 		bullet.trail = 1;
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaExp").setColor(0x3F8243, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -250,7 +243,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardGrenadeConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_semtex;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.MINING));
 		bullet.velocity *= 2;
 		bullet.gravity *= 2;
 		bullet.dmgMin = 10;
@@ -259,23 +252,21 @@ public class Gun4GaugeFactory {
 		bullet.trail = 1;
 		bullet.explosive = 0.0F;
 		
-		bullet.bImpact = new IBulletImpactBehavior() {
-
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
-				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				ExplosionNT explosion = new ExplosionNT(bullet.worldObj, null, bullet.posX, bullet.posY, bullet.posZ, 4);
-				explosion.atttributes.add(ExAttrib.ALLDROP);
-				explosion.atttributes.add(ExAttrib.NOHURT);
-				explosion.doExplosionA();
-				explosion.doExplosionB(false);
-				
-				ExplosionLarge.spawnParticles(bullet.worldObj, bullet.posX, bullet.posY, bullet.posZ, 15);
-			}
+		bullet.bntImpact = (bulletnt, x, y, z, sideHit) -> {
+			
+			if(bulletnt.worldObj.isRemote)
+				return;
+			
+			ExplosionNT explosion = new ExplosionNT(bulletnt.worldObj, null, bulletnt.posX, bulletnt.posY, bulletnt.posZ, 4);
+			explosion.atttributes.add(ExAttrib.ALLDROP);
+			explosion.atttributes.add(ExAttrib.NOHURT);
+			explosion.doExplosionA();
+			explosion.doExplosionB(false);
+			
+			ExplosionLarge.spawnParticles(bulletnt.worldObj, bulletnt.posX, bulletnt.posY, bulletnt.posZ, 15);
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaSem").setColor(0x5C5C5C, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -284,7 +275,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardGrenadeConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_balefire;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.BALEFIRE));
 		bullet.velocity *= 2;
 		bullet.gravity *= 2;
 		bullet.dmgMin = 50;
@@ -293,22 +284,20 @@ public class Gun4GaugeFactory {
 		bullet.trail = 1;
 		bullet.explosive = 0.0F;
 		
-		bullet.bImpact = new IBulletImpactBehavior() {
-
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
-				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				ExplosionNT explosion = new ExplosionNT(bullet.worldObj, null, bullet.posX, bullet.posY, bullet.posZ, 6);
-				explosion.atttributes.add(ExAttrib.BALEFIRE);
-				explosion.doExplosionA();
-				explosion.doExplosionB(false);
-				
-				ExplosionLarge.spawnParticles(bullet.worldObj, bullet.posX, bullet.posY, bullet.posZ, 30);
-			}
+		bullet.bntImpact = (bulletnt, x, y, z, sideHit) -> {
+			
+			if(bulletnt.worldObj.isRemote)
+				return;
+			
+			ExplosionNT explosion = new ExplosionNT(bulletnt.worldObj, null, bulletnt.posX, bulletnt.posY, bulletnt.posZ, 6);
+			explosion.atttributes.add(ExAttrib.BALEFIRE);
+			explosion.doExplosionA();
+			explosion.doExplosionB(false);
+			
+			ExplosionLarge.spawnParticles(bulletnt.worldObj, bulletnt.posX, bulletnt.posY, bulletnt.posZ, 30);
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaBale").setColor(0x7BFF44, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -317,7 +306,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardRocketConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_kampf;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.KAMPF));
 		bullet.spread = 0.0F;
 		bullet.gravity = 0.0D;
 		bullet.wear = 15;
@@ -326,6 +315,8 @@ public class Gun4GaugeFactory {
 		bullet.trail = 4;
 		bullet.vPFX = "smoke";
 		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaKampf").setColor(0xE7BA48, SpentCasing.COLOR_CASE_4GA);
+		
 		return bullet;
 	}
 
@@ -333,7 +324,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardRocketConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_canister;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.CANISTER));
 		bullet.spread = 0.0F;
 		bullet.gravity = 0.0D;
 		bullet.wear = 15;
@@ -342,27 +333,26 @@ public class Gun4GaugeFactory {
 		bullet.trail = 4;
 		bullet.vPFX = "smoke";
 		
-		bullet.bUpdate = new IBulletUpdateBehavior() {
-
-			@Override
-			public void behaveUpdate(EntityBulletBase bullet) {
+		bullet.bntUpdate = (bulletnt) -> {
+			
+			if(!bulletnt.worldObj.isRemote) {
 				
-				if(!bullet.worldObj.isRemote) {
+				if(bulletnt.ticksExisted > 10) {
+					bulletnt.setDead();
 					
-					if(bullet.ticksExisted > 10) {
-						bullet.setDead();
+					for(int i = 0; i < 50; i++) {
 						
-						for(int i = 0; i < 50; i++) {
-							
-							EntityBulletBase bolt = new EntityBulletBase(bullet.worldObj, BulletConfigSyncingUtil.M44_AP);
-							bolt.setPosition(bullet.posX, bullet.posY, bullet.posZ);
-							bolt.setThrowableHeading(bullet.motionX, bullet.motionY, bullet.motionZ, 0.25F, 0.1F);
-							bullet.worldObj.spawnEntityInWorld(bolt);
-						}
+						EntityBulletBaseNT bolt = new EntityBulletBaseNT(bulletnt.worldObj, BulletConfigSyncingUtil.M44_AP);
+						bolt.setPosition(bulletnt.posX, bulletnt.posY, bulletnt.posZ);
+						bolt.setThrowableHeading(bulletnt.motionX, bulletnt.motionY, bulletnt.motionZ, 0.25F, 0.1F);
+						bolt.setThrower(bulletnt.getThrower());
+						bulletnt.worldObj.spawnEntityInWorld(bolt);
 					}
 				}
 			}
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaCan").setColor(0xCACACA, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -371,53 +361,53 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardAirstrikeConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_sleek;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.SLEEK));
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaIF").setColor(0x1D1D1D, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
 	
 	public static BulletConfiguration get4GaugeClawConfig() {
 		
-		BulletConfiguration bullet = get4GaugeConfig();
+		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_claw;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.CLAW));
 		bullet.dmgMin = 6;
 		bullet.dmgMax = 9;
 		bullet.bulletsMin *= 2;
 		bullet.bulletsMax *= 2;
 		bullet.leadChance = 100;
 		
-		bullet.bHurt = new IBulletHurtBehavior() {
-
-			@Override
-			public void behaveEntityHurt(EntityBulletBase bullet, Entity hit) {
+		bullet.bntHurt = (bulletnt, hit) -> {
+			
+			if(bulletnt.worldObj.isRemote)
+				return;
+			
+			if(hit instanceof EntityLivingBase) {
+				EntityLivingBase living = (EntityLivingBase) hit;
+				float f = living.getHealth();
 				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				if(hit instanceof EntityLivingBase) {
-					EntityLivingBase living = (EntityLivingBase) hit;
-					float f = living.getHealth();
+				if(f > 0) {
+					f = Math.max(0, f - 2);
+					living.setHealth(f);
 					
-					if(f > 0) {
-						f = Math.max(0, f - 2);
-						living.setHealth(f);
-						
-						if(f == 0)
-							living.onDeath(ModDamageSource.causeBulletDamage(bullet, hit));
-					}
+					if(f == 0)
+						living.onDeath(ModDamageSource.causeBulletDamage(bulletnt, hit));
 				}
 			}
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaClaw").setColor(0x5E38CC, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
 	
 	public static BulletConfiguration get4GaugeVampireConfig() {
 		
-		BulletConfiguration bullet = get4GaugeConfig();
+		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_vampire;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.VAMPIRE));
 		bullet.dmgMin = 6;
 		bullet.dmgMax = 9;
 		bullet.bulletsMin *= 2;
@@ -425,59 +415,55 @@ public class Gun4GaugeFactory {
 		bullet.leadChance = 100;
 		bullet.style = BulletConfiguration.STYLE_FLECHETTE;
 		
-		bullet.bHurt = new IBulletHurtBehavior() {
+		bullet.bntHurt = (bulletnt, hit) -> {
 
-			@Override
-			public void behaveEntityHurt(EntityBulletBase bullet, Entity hit) {
-				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				if(hit instanceof EntityPlayer) {
-					EntityPlayer player = (EntityPlayer) hit;
-					
-					IExtendedEntityProperties prop = player.getExtendedProperties("WitcheryExtendedPlayer");
-					
-					NBTTagCompound blank = new NBTTagCompound();
-					blank.setTag("WitcheryExtendedPlayer", new NBTTagCompound());
-					
-					if(prop != null) {
-						prop.loadNBTData(blank);
-					}
+			if(bulletnt.worldObj.isRemote)
+				return;
+
+			if(hit instanceof EntityPlayer) {
+				EntityPlayer player = (EntityPlayer) hit;
+
+				IExtendedEntityProperties prop = player.getExtendedProperties("WitcheryExtendedPlayer");
+
+				NBTTagCompound blank = new NBTTagCompound();
+				blank.setTag("WitcheryExtendedPlayer", new NBTTagCompound());
+
+				if(prop != null) {
+					prop.loadNBTData(blank);
 				}
 			}
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaVamp").setColor(0x278400, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
 	
 	public static BulletConfiguration get4GaugeVoidConfig() {
 		
-		BulletConfiguration bullet = get4GaugeConfig();
+		BulletConfiguration bullet = BulletConfigFactory.standardBuckshotConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_void;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.VOID));
 		bullet.dmgMin = 6;
 		bullet.dmgMax = 9;
 		bullet.bulletsMin *= 2;
 		bullet.bulletsMax *= 2;
 		bullet.leadChance = 0;
 		
-		bullet.bHurt = new IBulletHurtBehavior() {
+		bullet.bntHurt = (bulletnt, hit) -> {
+				
+			if(bulletnt.worldObj.isRemote)
+				return;
 
-			@Override
-			public void behaveEntityHurt(EntityBulletBase bullet, Entity hit) {
-				
-				if(bullet.worldObj.isRemote)
-					return;
-				
-				if(hit instanceof EntityPlayer) {
-					EntityPlayer player = (EntityPlayer) hit;
-					
-					player.inventory.dropAllItems();
-					player.worldObj.newExplosion(bullet.shooter, player.posX, player.posY, player.posZ, 5.0F, true, true);
-				}
+			if(hit instanceof EntityPlayer) {
+				EntityPlayer player = (EntityPlayer) hit;
+
+				player.inventory.dropAllItems();
+				player.worldObj.newExplosion(bulletnt.getThrower(), player.posX, player.posY, player.posZ, 5.0F, true, true);
 			}
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaVoid").setColor(0x3F3F3F, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}
@@ -486,7 +472,7 @@ public class Gun4GaugeFactory {
 		
 		BulletConfiguration bullet = BulletConfigFactory.standardRocketConfig();
 		
-		bullet.ammo = ModItems.ammo_4gauge_titan;
+		bullet.ammo = new ComparableStack(ModItems.ammo_4gauge.stackFromEnum(Ammo4Gauge.QUACK));
 		bullet.velocity *= 2D;
 		bullet.spread = 0.0F;
 		bullet.gravity = 0.0D;
@@ -496,38 +482,26 @@ public class Gun4GaugeFactory {
 		bullet.trail = 4;
 		bullet.vPFX = "explode";
 		
-		bullet.bUpdate = new IBulletUpdateBehavior() {
+		bullet.bntUpdate = (bulletnt) -> {
 
-			@Override
-			public void behaveUpdate(EntityBulletBase bullet) {
-				
-				if(!bullet.worldObj.isRemote) {
-					
-					if(bullet.ticksExisted % 2 == 0) {
-						
-						List<EntityCreature> creatures = bullet.worldObj.getEntitiesWithinAABB(EntityCreature.class, bullet.boundingBox.expand(10, 10, 10));
-						
-						for(EntityCreature creature : creatures) {
-							
-							if(creature.getClass().getCanonicalName().startsWith("net.minecraft.entity.titan")) {
-								ExplosionNukeSmall.explode(bullet.worldObj, creature.posX, creature.posY, creature.posZ, ExplosionNukeSmall.medium);
+			if(!bulletnt.worldObj.isRemote) {
+				if(bulletnt.ticksExisted % 2 == 0) {
 
-								bullet.worldObj.removeEntity(creature);
-								bullet.worldObj.unloadEntities(new ArrayList() {{ add(creature); }});
-								//creature.isDead = true;
-								
-								/*try {
-									Method m = Class.forName("net.minecraft.entity.deity.EntityDeity").getDeclaredMethod("setTitanHealth", double.class);
-									m.setAccessible(true);
-									m.invoke(creature, 0.0D);
-								} catch (Exception ex) { }*/
-							}
+					List<EntityCreature> creatures = bulletnt.worldObj.getEntitiesWithinAABB(EntityCreature.class, bulletnt.boundingBox.expand(10, 10, 10));
+					for(EntityCreature creature : creatures) {
+
+						if(creature.getClass().getCanonicalName().startsWith("net.minecraft.entity.titan")) {
+							BulletConfigFactory.nuclearExplosion(creature, 0, 0, 0, ExplosionNukeSmall.PARAMS_TOTS);
+
+							bulletnt.worldObj.removeEntity(creature);
+							bulletnt.worldObj.unloadEntities(new ArrayList() {{ add(creature); }});
 						}
-						
 					}
 				}
 			}
 		};
+		
+		bullet.spentCasing = CASING4GAUGE.clone().register("4GaDucc").setColor(0x1E1E1E, SpentCasing.COLOR_CASE_4GA);
 		
 		return bullet;
 	}

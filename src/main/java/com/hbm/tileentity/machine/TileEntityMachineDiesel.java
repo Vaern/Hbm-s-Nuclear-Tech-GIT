@@ -6,27 +6,39 @@ import java.util.HashMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionHandler.PollutionType;
 import com.hbm.interfaces.IFluidAcceptor;
 import com.hbm.interfaces.IFluidContainer;
 import com.hbm.inventory.FluidContainerRegistry;
+import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
 import com.hbm.inventory.fluid.trait.FT_Combustible;
 import com.hbm.inventory.fluid.trait.FT_Combustible.FuelGrade;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Leaded;
+import com.hbm.inventory.gui.GUIMachineDiesel;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IConfigurableMachine;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.IGUIProvider;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 
 import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyGenerator;
-import api.hbm.fluid.IFluidStandardReceiver;
+import api.hbm.fluid.IFluidStandardTransceiver;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineDiesel extends TileEntityMachineBase implements IEnergyGenerator, IFluidContainer, IFluidAcceptor, IFluidStandardReceiver, IConfigurableMachine {
+public class TileEntityMachineDiesel extends TileEntityMachinePolluting implements IEnergyGenerator, IFluidContainer, IFluidAcceptor, IFluidStandardTransceiver, IConfigurableMachine, IGUIProvider {
 
 	public long power;
 	public int soundCycle = 0;
@@ -38,8 +50,8 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 	public static int fluidCap = 16000;
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.9D);
-		fuelEfficiency.put(FuelGrade.HIGH,		1.0D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.5D);
+		fuelEfficiency.put(FuelGrade.HIGH,		0.75D);
 		fuelEfficiency.put(FuelGrade.AERO,		0.1D);
 	}
 	public static boolean shutUp = false;
@@ -49,8 +61,8 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 	private static final int[] slots_side = new int[] { 2 };
 
 	public TileEntityMachineDiesel() {
-		super(5);
-		tank = new FluidTank(Fluids.DIESEL, 16000, 0);
+		super(5, 100);
+		tank = new FluidTank(Fluids.DIESEL, 4_000, 0);
 	}
 
 	@Override
@@ -89,18 +101,22 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 	}
 
 	@Override
-	public int[] getAccessibleSlotsFromSide(int p_94128_1_) {
-		return p_94128_1_ == 0 ? slots_bottom : (p_94128_1_ == 1 ? slots_top : slots_side);
+	public int[] getAccessibleSlotsFromSide(int side) {
+		return side == 0 ? slots_bottom : (side == 1 ? slots_top : slots_side);
 	}
 
 	@Override
-	public boolean canExtractItem(int i, ItemStack itemStack, int j) {
-		if (i == 1)
-			if (itemStack.getItem() == ModItems.canister_empty || itemStack.getItem() == ModItems.tank_steel)
+	public boolean canExtractItem(int i, ItemStack stack, int j) {
+		if(i == 1) {
+			if(stack.getItem() == ModItems.canister_empty || stack.getItem() == ModItems.tank_steel) {
 				return true;
-		if (i == 2)
-			if (itemStack.getItem() instanceof IBatteryItem && ((IBatteryItem)itemStack.getItem()).getCharge(itemStack) == ((IBatteryItem)itemStack.getItem()).getMaxCharge())
+			}
+		}
+		if(i == 2) {
+			if(stack.getItem() instanceof IBatteryItem && ((IBatteryItem) stack.getItem()).getCharge(stack) == ((IBatteryItem) stack.getItem()).getMaxCharge()) {
 				return true;
+			}
+		}
 
 		return false;
 	}
@@ -114,8 +130,10 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 		
 		if(!worldObj.isRemote) {
 			
-			for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+			for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 				this.sendPower(worldObj, xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ, dir);
+				this.sendSmoke(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ, dir);
+			}
 
 			//Tank Management
 			FluidType last = tank.getTankType();
@@ -174,12 +192,12 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 
 	public void generate() {
 		
-		if (hasAcceptableFuel()) {
+		if(hasAcceptableFuel()) {
 			if (tank.getFill() > 0) {
 				
 				if(!shutUp) {
 					if (soundCycle == 0) {
-						this.worldObj.playSoundEffect(this.xCoord, this.yCoord, this.zCoord, "fireworks.blast", 1.5F * this.getVolume(3), 0.5F);
+						this.worldObj.playSoundEffect(this.xCoord, this.yCoord, this.zCoord, "fireworks.blast", 0.75F * this.getVolume(3), 0.5F);
 					}
 					soundCycle++;
 				}
@@ -190,6 +208,9 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 				tank.setFill(tank.getFill() - 1);
 				if(tank.getFill() < 0)
 					tank.setFill(0);
+				
+				this.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 0.5F);
+				if(tank.getTankType().hasTrait(FT_Leaded.class)) this.pollute(PollutionType.HEAVYMETAL, PollutionHandler.HEAVY_METAL_PER_SECOND * 0.5F);
 
 				if(power + getHEFromFuel() <= powerCap) {
 					power += getHEFromFuel();
@@ -287,5 +308,21 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IE
 		}
 		writer.endArray().setIndent("  ");
 		writer.name("B:shutUp").value(shutUp);
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMachineDiesel(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMachineDiesel(player.inventory, this);
+	}
+
+	@Override
+	public FluidTank[] getSendingTanks() {
+		return this.getSmokeTanks();
 	}
 }

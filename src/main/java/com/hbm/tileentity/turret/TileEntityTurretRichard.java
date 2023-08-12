@@ -3,13 +3,23 @@ package com.hbm.tileentity.turret;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hbm.entity.projectile.EntityBulletBase;
+import com.hbm.entity.projectile.EntityBulletBaseNT;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.gui.GUITurretRichard;
+import com.hbm.items.ItemAmmoEnums.AmmoRocket;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 import com.hbm.items.ModItems;
 
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
 
 public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 
@@ -128,7 +138,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 				this.worldObj.playSoundEffect(xCoord, yCoord, zCoord, "hbm:turret.richard_fire", 2.0F, 1.0F);
 				this.loaded--;
 				
-				if(conf.ammo == ModItems.ammo_rocket_nuclear)
+				if(conf.ammo.equals(new ComparableStack(ModItems.ammo_rocket.stackFromEnum(AmmoRocket.NUCLEAR))))
 					timer = -50;
 				
 			} else {
@@ -145,7 +155,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 		vec.rotateAroundZ((float) -this.rotationPitch);
 		vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
 		
-		EntityBulletBase proj = new EntityBulletBase(worldObj, BulletConfigSyncingUtil.getKey(bullet));
+		EntityBulletBaseNT proj = new EntityBulletBaseNT(worldObj, BulletConfigSyncingUtil.getKey(bullet));
 		proj.setPositionAndRotation(pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord, 0.0F, 0.0F);
 		
 		proj.setThrowableHeading(vec.xCoord, vec.yCoord, vec.zCoord, bullet.velocity * 0.75F, bullet.spread);
@@ -162,5 +172,11 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 		nbt.setInteger("loaded", this.loaded);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUITurretRichard(player.inventory, this);
 	}
 }

@@ -8,9 +8,11 @@ import com.hbm.interfaces.IFluidAcceptor;
 import com.hbm.interfaces.IFluidSource;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.container.ContainerMachineChemplant;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.inventory.gui.GUIMachineChemplant;
 import com.hbm.inventory.recipes.ChemplantRecipes;
 import com.hbm.inventory.recipes.ChemplantRecipes.ChemRecipe;
 import com.hbm.items.ModItems;
@@ -18,6 +20,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
 import com.hbm.util.fauxpointtwelve.DirPos;
@@ -26,15 +29,19 @@ import api.hbm.energy.IEnergyUser;
 import api.hbm.fluid.IFluidStandardTransceiver;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineChemplant extends TileEntityMachineBase implements IEnergyUser, IFluidSource, IFluidAcceptor, IFluidStandardTransceiver {
+public class TileEntityMachineChemplant extends TileEntityMachineBase implements IEnergyUser, IFluidSource, IFluidAcceptor, IFluidStandardTransceiver, IGUIProvider {
 
 	public long power;
 	public static final long maxPower = 100000;
@@ -86,8 +93,8 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 			this.isProgressing = false;
 			this.power = Library.chargeTEFromItems(slots, 0, power, maxPower);
 
-			if(!tanks[0].loadTank(17, 19, slots)) tanks[0].unloadTank(17, 19, slots);
-			if(!tanks[1].loadTank(18, 20, slots)) tanks[1].unloadTank(18, 20, slots);
+			if(!tanks[0].loadTank(17, 19, slots) && (slots[17] == null || slots[17].getItem() != ModItems.fluid_barrel_infinite)) tanks[0].unloadTank(17, 19, slots);
+			if(!tanks[1].loadTank(18, 20, slots) && (slots[18] == null || slots[18].getItem() != ModItems.fluid_barrel_infinite)) tanks[1].unloadTank(18, 20, slots);
 			
 			tanks[2].unloadTank(9, 11, slots);
 			tanks[3].unloadTank(10, 12, slots);
@@ -104,8 +111,8 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 			}
 			
 			for(DirPos pos : getConPos()) {
-				if(tanks[2].getFill() > 0) this.sendFluid(tanks[2].getTankType(), worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
-				if(tanks[3].getFill() > 0) this.sendFluid(tanks[3].getTankType(), worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
+				if(tanks[2].getFill() > 0) this.sendFluid(tanks[2], worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
+				if(tanks[3].getFill() > 0) this.sendFluid(tanks[3], worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
 			}
 			
 			UpgradeManager.eval(slots, 1, 3);
@@ -155,7 +162,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 				worldObj.spawnParticle("cloud", x, y, z, 0.0, 0.1, 0.0);
 			}
 			
-			float volume = this.getVolume(2);
+			float volume = 1;//this.getVolume(2);
 			
 			if(isProgressing && volume > 0) {
 				
@@ -180,7 +187,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 	
 	@Override
 	public AudioWrapper createAudioLoop() {
-		return MainRegistry.proxy.getLoopedSound("hbm:block.chemplantOperate", xCoord, yCoord, zCoord, 1.0F, 1.0F);
+		return MainRegistry.proxy.getLoopedSound("hbm:block.chemplantOperate", xCoord, yCoord, zCoord, 1.0F, 10F, 1.0F);
 	}
 
 	@Override
@@ -259,10 +266,10 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 	}
 	
 	private void setupTanks(ChemRecipe recipe) {
-		if(recipe.inputFluids[0] != null) tanks[0].setTankType(recipe.inputFluids[0].type);		else tanks[0].setTankType(Fluids.NONE);
-		if(recipe.inputFluids[1] != null) tanks[1].setTankType(recipe.inputFluids[1].type);		else tanks[1].setTankType(Fluids.NONE);
-		if(recipe.outputFluids[0] != null) tanks[2].setTankType(recipe.outputFluids[0].type);	else tanks[2].setTankType(Fluids.NONE);
-		if(recipe.outputFluids[1] != null) tanks[3].setTankType(recipe.outputFluids[1].type);	else tanks[3].setTankType(Fluids.NONE);
+		if(recipe.inputFluids[0] != null) tanks[0].withPressure(recipe.inputFluids[0].pressure).setTankType(recipe.inputFluids[0].type);	else tanks[0].setTankType(Fluids.NONE);
+		if(recipe.inputFluids[1] != null) tanks[1].withPressure(recipe.inputFluids[1].pressure).setTankType(recipe.inputFluids[1].type);	else tanks[1].setTankType(Fluids.NONE);
+		if(recipe.outputFluids[0] != null) tanks[2].withPressure(recipe.outputFluids[0].pressure).setTankType(recipe.outputFluids[0].type);	else tanks[2].setTankType(Fluids.NONE);
+		if(recipe.outputFluids[1] != null) tanks[3].withPressure(recipe.outputFluids[1].pressure).setTankType(recipe.outputFluids[1].type);	else tanks[3].setTankType(Fluids.NONE);
 	}
 	
 	private boolean hasRequiredFluids(ChemRecipe recipe) {
@@ -357,7 +364,10 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 				
 				for(AStack ingredient : recipe.inputs) {
 					
-					if(!InventoryUtil.doesArrayHaveIngredients(slots, 13, 16, ingredient)) {
+					outer:
+					while(!InventoryUtil.doesArrayHaveIngredients(slots, 13, 16, ingredient)) {
+						
+						boolean found = false;
 						
 						for(int i = 0; i < inv.getSizeInventory(); i++) {
 							
@@ -369,7 +379,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 									if(slots[j] != null && slots[j].stackSize < slots[j].getMaxStackSize() & InventoryUtil.doesStackDataMatch(slots[j], stack)) {
 										inv.decrStackSize(i, 1);
 										slots[j].stackSize++;
-										return;
+										continue outer;
 									}
 								}
 								
@@ -379,11 +389,13 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 										slots[j] = stack.copy();
 										slots[j].stackSize = 1;
 										inv.decrStackSize(i, 1);
-										return;
+										continue outer;
 									}
 								}
 							}
 						}
+						
+						if(!found) return;
 					}
 				}
 			}
@@ -619,5 +631,16 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 	@Override
 	public FluidTank[] getAllTanks() {
 		return tanks;
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerMachineChemplant(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIMachineChemplant(player.inventory, this);
 	}
 }

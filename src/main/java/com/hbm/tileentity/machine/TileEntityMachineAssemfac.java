@@ -1,29 +1,31 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.interfaces.IFluidAcceptor;
-import com.hbm.interfaces.IFluidSource;
 import com.hbm.inventory.UpgradeManager;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.container.ContainerAssemfac;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTank;
+import com.hbm.inventory.gui.GUIAssemfac;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.Library;
 import com.hbm.util.fauxpointtwelve.DirPos;
 
 import api.hbm.fluid.IFluidStandardTransceiver;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase implements IFluidStandardTransceiver, IFluidAcceptor, IFluidSource {
+public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase implements IFluidStandardTransceiver {
 	
 	public AssemblerArm[] arms;
 
@@ -38,13 +40,22 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 			arms[i] = new AssemblerArm(i % 3 == 1 ? 1 : 0); //the second of every group of three becomes a welder
 		}
 
-		water = new FluidTank(Fluids.WATER, 64_000, 0);
-		steam = new FluidTank(Fluids.SPENTSTEAM, 64_000, 1);
+		water = new FluidTank(Fluids.WATER, 64_000);
+		steam = new FluidTank(Fluids.SPENTSTEAM, 64_000);
 	}
 
 	@Override
 	public String getName() {
 		return "container.assemfac";
+	}
+
+	@Override
+	public void setInventorySlotContents(int i, ItemStack stack) {
+		super.setInventorySlotContents(i, stack);
+		
+		if(stack != null && i >= 1 && i <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
+			worldObj.playSoundEffect(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, "hbm:item.upgradePlug", 1.0F, 1.0F);
+		}
 	}
 
 	@Override
@@ -74,11 +85,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 			this.consumption *= (overLevel + 1);
 			
 			for(DirPos pos : getConPos()) {
-				this.sendFluid(steam.getTankType(), worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
-			}
-			
-			if(steam.getFill() > 0) {
-				this.fillFluidInit(steam.getTankType());
+				this.sendFluid(steam, worldObj, pos.getX(), pos.getY(), pos.getZ(), pos.getDir());
 			}
 			
 			NBTTagCompound data = new NBTTagCompound();
@@ -386,6 +393,11 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 	}
 
 	@Override
+	public int getPowerSlot() {
+		return 0;
+	}
+
+	@Override
 	public FluidTank[] getSendingTanks() {
 		return new FluidTank[] { steam };
 	}
@@ -396,60 +408,18 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 	}
 
 	@Override
-	public void setFillForSync(int fill, int index) { }
-
-	@Override
-	public void setFluidFill(int fill, FluidType type) {
-		if(type == water.getTankType()) water.setFill(fill);
-		if(type == steam.getTankType()) steam.setFill(fill);
-	}
-
-	@Override
-	public void setTypeForSync(FluidType type, int index) { }
-
-	@Override
-	public int getFluidFill(FluidType type) {
-		if(type == water.getTankType()) return water.getFill();
-		if(type == steam.getTankType()) return steam.getFill();
-		return 0;
-	}
-
-	@Override
-	public void fillFluidInit(FluidType type) {
-		for(DirPos pos : getConPos()) {
-			this.fillFluid(pos.getX(), pos.getY(), pos.getZ(), this.getTact(), type);
-		}
-	}
-
-	@Override
-	public void fillFluid(int x, int y, int z, boolean newTact, FluidType type) {
-		Library.transmitFluid(x, y, z, newTact, this, worldObj, type);
-	}
-
-	@Override
-	public boolean getTact() {
-		return worldObj.getTotalWorldTime() % 2 == 0;
-	}
-
-	private List<IFluidAcceptor> list = new ArrayList();
-	
-	@Override
-	public List<IFluidAcceptor> getFluidList(FluidType type) {
-		return type == steam.getTankType() ? this.list : new ArrayList();
-	}
-
-	@Override
-	public void clearFluidList(FluidType type) {
-		this.list.clear();
-	}
-
-	@Override
-	public int getMaxFluidFill(FluidType type) {
-		return type == water.getTankType() ? water.getMaxFill() : 0;
-	}
-
-	@Override
 	public FluidTank[] getAllTanks() {
 		return new FluidTank[] { water, steam };
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new ContainerAssemfac(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIAssemfac(player.inventory, this);
 	}
 }

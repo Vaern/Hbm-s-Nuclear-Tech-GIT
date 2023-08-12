@@ -20,11 +20,8 @@ public class DungeonToolbox {
 			return;
 		
 		for(int i = x; i < x + sx; i++) {
-			
 			for(int j = y; j < y + sy; j++) {
-				
 				for(int k = z; k < z + sz; k++) {
-					
 					MetaBlock b = getRandom(blocks, world.rand);
 					world.setBlock(i, j, k, b.block, b.meta, 2);
 				}

@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
@@ -96,7 +97,7 @@ public class GUIRBMKConsole extends GuiScreen {
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 2; j++) {
 				int id = i * 2 + j + 1;
-				this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 6 + 40 * j, guiTop + 8 + 21 * i, 18, 18, mouseX, mouseY, new String[]{ EnumChatFormatting.YELLOW + I18nUtil.resolveKey("rbmk.console." + console.screens[id - 1].type.name().toLowerCase(), id) } );
+				this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 6 + 40 * j, guiTop + 8 + 21 * i, 18, 18, mouseX, mouseY, new String[]{ EnumChatFormatting.YELLOW + I18nUtil.resolveKey("rbmk.console." + console.screens[id - 1].type.name().toLowerCase(Locale.US), id) } );
 				this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 24 + 40 * j, guiTop + 8 + 21 * i, 18, 18, mouseX, mouseY, new String[]{ I18nUtil.resolveKey("rbmk.console.assign", id) } );
 			}
 		}
@@ -319,9 +320,11 @@ public class GUIRBMKConsole extends GuiScreen {
 			case FUEL_SIM:
 				if(col.data.hasKey("c_heat")) {
 					int fh = (int)Math.ceil((col.data.getDouble("c_heat") - 20) * 8 / col.data.getDouble("c_maxHeat"));
+					if(fh > 8) fh = 8;
 					drawTexturedModalRect(guiLeft + x + 1, guiTop + y + size - fh - 1, 11, 191 - fh, 2, fh);
 					
 					int fe = (int)Math.ceil((col.data.getDouble("enrichment")) * 8);
+					if(fe > 8) fe = 8;
 					drawTexturedModalRect(guiLeft + x + 4, guiTop + y + size - fe - 1, 14, 191 - fe, 2, fe);
 				}
 				break;

@@ -3,6 +3,7 @@ package com.hbm.items.tool;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
@@ -10,6 +11,10 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.hbm.handler.ToolAbility;
 import com.hbm.handler.ToolAbility.*;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.PlayerInformPacket;
+import com.hbm.util.ChatBuilder;
 import com.hbm.handler.WeaponAbility;
 
 import api.hbm.item.IDepthRockTool;
@@ -21,26 +26,25 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRockTool {
 	
-	private EnumToolType toolType;
-	private EnumRarity rarity = EnumRarity.common;
+	protected boolean isShears = false;
+	protected EnumToolType toolType;
+	protected EnumRarity rarity = EnumRarity.common;
 	//was there a reason for this to be private?
 	protected float damage;
 	protected double movement;
-	private List<ToolAbility> breakAbility = new ArrayList() {{ add(null); }};
-	private List<WeaponAbility> hitAbility = new ArrayList();
+	protected List<ToolAbility> breakAbility = new ArrayList() {{ add(null); }};
+	protected List<WeaponAbility> hitAbility = new ArrayList();
 	
 	public static enum EnumToolType {
 		
@@ -72,6 +76,11 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		public Set<Material> materials = new HashSet();
 		public Set<Block> blocks = new HashSet();
 	}
+	
+	public ItemToolAbility setShears() {
+		this.isShears = true;
+		return this;
+	}
 
 	public ItemToolAbility(float damage, double movement, ToolMaterial material, EnumToolType type) {
 		super(0, material, type.blocks);
@@ -84,7 +93,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 			this.setHarvestLevel("pickaxe", material.getHarvestLevel());
 			this.setHarvestLevel("shovel", material.getHarvestLevel());
 		} else {
-			this.setHarvestLevel(type.toString().toLowerCase(), material.getHarvestLevel());
+			this.setHarvestLevel(type.toString().toLowerCase(Locale.US), material.getHarvestLevel());
 		}
 	}
 
@@ -129,7 +138,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		Block block = world.getBlock(x, y, z);
 		int meta = world.getBlockMetadata(x, y, z);
 
-		if(!world.isRemote && canHarvestBlock(block, stack) && this.getCurrentAbility(stack) != null && canOperate(stack))
+		if(!world.isRemote && (canHarvestBlock(block, stack) || canShearBlock(block, stack, world, x, y, z)) && this.getCurrentAbility(stack) != null && canOperate(stack))
 			return this.getCurrentAbility(stack).onDig(world, x, y, z, player, block, meta, this);
 
 		return false;
@@ -232,18 +241,17 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 		while(getCurrentAbility(stack) != null && !getCurrentAbility(stack).isAllowed()) {
 
-			player.addChatComponentMessage(new ChatComponentText("[Ability ").appendSibling(new ChatComponentTranslation(getCurrentAbility(stack).getName(), new Object[0]))
-					.appendSibling(new ChatComponentText(getCurrentAbility(stack).getExtension() + " is blacklisted!]")).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+			PacketDispatcher.wrapper.sendTo(new PlayerInformPacket(ChatBuilder.start("[Ability ").nextTranslation(getCurrentAbility(stack).getName()).next(getCurrentAbility(stack).getExtension() + " is blacklisted!]").colorAll(EnumChatFormatting.RED).flush(), MainRegistry.proxy.ID_TOOLABILITY), (EntityPlayerMP) player);
+
 
 			i++;
 			setAbility(stack, i % this.breakAbility.size());
 		}
 
 		if(getCurrentAbility(stack) != null) {
-			player.addChatComponentMessage(new ChatComponentText("[Enabled ").appendSibling(new ChatComponentTranslation(getCurrentAbility(stack).getName(), new Object[0]))
-					.appendSibling(new ChatComponentText(getCurrentAbility(stack).getExtension() + "]")).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.YELLOW)));
+			PacketDispatcher.wrapper.sendTo(new PlayerInformPacket(ChatBuilder.start("[Enabled ").nextTranslation(getCurrentAbility(stack).getName()).next(getCurrentAbility(stack).getExtension() + "]").colorAll(EnumChatFormatting.YELLOW).flush(), MainRegistry.proxy.ID_TOOLABILITY), (EntityPlayerMP) player);
 		} else {
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GOLD + "[Tool ability deactivated]"));
+			PacketDispatcher.wrapper.sendTo(new PlayerInformPacket(ChatBuilder.start("[Tool ability deactivated]").color(EnumChatFormatting.GOLD).flush(), MainRegistry.proxy.ID_TOOLABILITY), (EntityPlayerMP) player);
 		}
 
 		world.playSoundAtEntity(player, "random.orb", 0.25F, getCurrentAbility(stack) == null ? 0.75F : 1.25F);
@@ -252,9 +260,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	}
 
 	private ToolAbility getCurrentAbility(ItemStack stack) {
-
 		int ability = getAbility(stack) % this.breakAbility.size();
-
 		return this.breakAbility.get(ability);
 	}
 
@@ -288,5 +294,10 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	@Override
 	public boolean canBreakRock(World world, EntityPlayer player, ItemStack tool, Block block, int x, int y, int z) {
 		return canOperate(tool) && this.rockBreaker;
+	}
+
+	@Override
+	public boolean isShears(ItemStack stack) {
+		return this.isShears;
 	}
 }
