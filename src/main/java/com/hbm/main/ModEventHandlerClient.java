@@ -50,6 +50,7 @@ import com.hbm.render.util.RenderScreenOverlay;
 import com.hbm.render.util.SoyuzPronter;
 import com.hbm.render.world.RenderNTMSkyboxChainloader;
 import com.hbm.render.world.RenderNTMSkyboxImpact;
+import com.hbm.sound.DynamicAudioHandler;
 import com.hbm.sound.MovingSoundChopper;
 import com.hbm.sound.MovingSoundChopperMine;
 import com.hbm.sound.MovingSoundCrashing;
@@ -1004,7 +1005,10 @@ public class ModEventHandlerClient {
 		}
 
 		if(event.phase == Phase.END) {
-
+			
+			//doubt the phase/event matters but why the hell not
+			DynamicAudioHandler.removeDeadSounds();
+			
 			if(ClientConfig.GUN_VISUAL_RECOIL.get()) {
 				ItemGunBaseNT.offsetVertical += ItemGunBaseNT.recoilVertical;
 				ItemGunBaseNT.offsetHorizontal += ItemGunBaseNT.recoilHorizontal;
